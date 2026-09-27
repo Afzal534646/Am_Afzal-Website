@@ -1420,10 +1420,12 @@
           <div>
             <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">AI Engine Model</label>
             <select id="genEngineModelSelect" class="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 text-slate-800 outline-none bg-slate-50">
-              <option value="flux" selected>Flux.1 Photoreal (SOTA Stock)</option>
-              <option value="flux-realism">Flux Ultra-Realism (Skin & Textures)</option>
-              <option value="sana">Sana 1024 (Studio Detail)</option>
-              <option value="turbo">SDXL Turbo (High-Speed Diffusion)</option>
+              <option value="flux" selected>⚡ Flux.1 Schnell (SOTA Photorealistic Microstock - Best)</option>
+              <option value="flux-realism">🌟 Flux.1 Ultra-Realism (Micro-Texture & Skin Perfection)</option>
+              <option value="stable-diffusion-3.5-large">🎨 Stable Diffusion 3.5 Large (Stability AI 8B Flagship)</option>
+              <option value="sana">💎 Sana 1.6K Ultra HD (High-Fidelity Studio Diffusion)</option>
+              <option value="playground-v2.5">🏆 Playground v2.5 Aesthetic (Commercial Stock Photography)</option>
+              <option value="turbo">⚡ SDXL Turbo (Instant High-Speed Diffusion)</option>
             </select>
           </div>
           <div>
@@ -2311,6 +2313,15 @@
         
         <!-- ================= TAB 1: GEMINI & BUILT-IN ================= -->
         <div id="apiHubContentGemini" class="space-y-3.5 text-xs">
+          <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-start gap-2.5 text-emerald-950 text-xs">
+            <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5"></i>
+            <div>
+              <p class="font-bold">🔒 Lifetime Persistent API Key & Built-in Engine:</p>
+              <p class="text-[11px] text-emerald-900/90 mt-0.5">
+                এখানে একবার Google Gemini API Key সেটআপ করলে তা <strong>লাইফটাইম (Lifetime)</strong> সংরক্ষিত থাকবে। কোনো লগআউট বা রিলোডে মুছে যাবে না। কী (Key) না দিলেও ইন-ব্রাউজার ফ্রি Vision AI দিয়ে সবকিছু ১০০% কাজ করবে।
+              </p>
+            </div>
+          </div>
           <div class="p-3 bg-blue-50/70 border border-blue-200/80 rounded-2xl flex items-start gap-2.5 text-blue-900">
             <i data-lucide="info" class="w-4 h-4 text-blue-600 shrink-0 mt-0.5"></i>
             <p class="leading-relaxed">
@@ -2552,7 +2563,9 @@
     let batchItemList = [];
     let currentActiveIdx = -1;
     let isProcessingBatch = false;
-    let userApiKey = localStorage.getItem('pixcraft_custom_api_key') || "";
+    let userApiKey = localStorage.getItem('pixcraft_custom_api_key') || 
+                  localStorage.getItem('pixcraft_lifetime_gemini_key') || 
+                  localStorage.getItem('pixcraft_global_admin_gemini_key') || "";
     let selectedModel = localStorage.getItem('pixcraft_selected_model');
     // Gemini 3.8 Flash is Google's official recommended model for 2026.
     // Migrate away from deprecated gemini-2.5-flash or missing models
@@ -3463,6 +3476,9 @@
       const style = document.getElementById('genStyleSelect').value;
       const quality = (document.getElementById('genQualitySelect') || {}).value || 'high';
       const model = (document.getElementById('genEngineModelSelect') || {}).value || 'flux';
+      // Auto-fallback mapping for maximum compatibility
+      let targetModel = model;
+      if (model === 'playground-v2.5') targetModel = 'flux-realism';
 
       try {
         const res = await PixEngine.generateImage({
@@ -4980,6 +4996,15 @@ Provide direct, structured, and helpful responses. If the user asks in Bengali, 
       selectedModel = document.getElementById('modelSelectBox').value || 'gemini-3.8-flash';
       localStorage.setItem('pixcraft_custom_api_key', userApiKey);
       localStorage.setItem('pixcraft_selected_model', selectedModel);
+      
+      // Lifetime Permanent Storage (Never lost on logout or session reset)
+      if (userApiKey) {
+        localStorage.setItem('pixcraft_lifetime_gemini_key', userApiKey);
+        const session = getActiveSession();
+        if (session && (session.role === 'admin' || (session.email && session.email.toLowerCase() === 'ak5757482@gmail.com'))) {
+          localStorage.setItem('pixcraft_global_admin_gemini_key', userApiKey);
+        }
+      }
       refreshApiStatusUI();
       closeApiModal();
       showToast(userApiKey ? `Saved: ${selectedModel}` : 'Using Fast Built-in Mode');
@@ -6549,11 +6574,54 @@ CRITICAL RULES:
       return map[catName] || 'Backgrounds/Textures,Abstract';
     }
 
-    function downloadAdobeStockCsv() {
-      if (batchItemList.length === 0) {
-        showToast('Upload images first');
-        return;
+    
+    // =========================================================================
+    // 💳 MICROSTOCK CSV CREDIT ENGINE (1 POINT PER PICTURE FOR REGULAR USERS)
+    // =========================================================================
+    function deductCsvExportPoints(imageCount) {
+      const session = getActiveSession();
+      const isAdmin = session && (session.role === 'admin' || (session.email && session.email.toLowerCase() === 'ak5757482@gmail.com'));
+      
+      // Master Admin is 100% Free and Unlimited
+      if (isAdmin) {
+        return { allowed: true, isAdmin: true, pointsDeducted: 0 };
       }
+
+      const requiredPoints = Math.max(1, Number(imageCount) || 1);
+      let currentBalance = Number(credits);
+      if (isNaN(currentBalance)) currentBalance = 5000;
+
+      if (currentBalance < requiredPoints) {
+        showToast(`⚠️ পয়েন্ট অপর্যাপ্ত! এই CSV তৈরি করতে ${requiredPoints} পয়েন্ট প্রয়োজন (প্রতি ছবি ১ পয়েন্ট)। ব্যালেন্স: ${currentBalance}`, 'error');
+        setAuthAlert(`<strong>পয়েন্ট অপর্যাপ্ত (Insufficient Credits):</strong><br>আপনার ${imageCount} টি ছবির জন্য ${requiredPoints} পয়েন্ট প্রয়োজন (১ পয়েন্ট/ছবি)। আপনার বর্তমান ব্যালেন্স: <strong>${currentBalance}</strong> পয়েন্ট。<br>ক্রেডিট রিচার্জ করতে Admin-কে যোগাযোগ করুন: <a href="https://wa.me/8801907286768" target="_blank" style="color:#16a34a;font-weight:700;">💬 WhatsApp (01907-286768)</a>`, 'error');
+        openUpgradeModal();
+        return { allowed: false, required: requiredPoints, balance: currentBalance };
+      }
+
+      // Deduct 1 point per picture
+      currentBalance -= requiredPoints;
+      credits = currentBalance;
+      localStorage.setItem('pixcraft_credits', credits);
+
+      // Persist in Users DB for active session
+      if (session && session.email) {
+        const users = getUsersDb();
+        const u = users.find(x => x.email && x.email.toLowerCase() === session.email.toLowerCase());
+        if (u) {
+          u.credits = currentBalance;
+          saveUsersDb(users);
+        }
+      }
+
+      updateCreditsDisplay();
+      showToast(`📊 CSV Generated! Deducted ${requiredPoints} point(s) [1 pt/picture]. Remaining: ${currentBalance} points.`);
+      return { allowed: true, isAdmin: false, pointsDeducted: requiredPoints, remaining: currentBalance };
+    }
+
+    function downloadAdobeStockCsv() {
+      if (batchItemList.length === 0) { showToast('Upload images first'); return; }
+      const check = deductCsvExportPoints(batchItemList.length);
+      if (!check.allowed) return;
 
       // Adobe Stock CSV specification: "Filename","Title","Keywords","Category","Releases"
       let csv = '"Filename","Title","Keywords","Category","Releases"\r\n';
@@ -6571,10 +6639,9 @@ CRITICAL RULES:
     }
 
     function downloadShutterstockCsv() {
-      if (batchItemList.length === 0) {
-        showToast('Upload images first');
-        return;
-      }
+      if (batchItemList.length === 0) { showToast('Upload images first'); return; }
+      const check = deductCsvExportPoints(batchItemList.length);
+      if (!check.allowed) return;
 
       // Official 7-Column Shutterstock Contributor CSV specification:
       // Filename,Description,Keywords,Categories,Editorial,Mature content,illustration
@@ -6600,10 +6667,9 @@ CRITICAL RULES:
     }
 
     function downloadFreepikCsv() {
-      if (batchItemList.length === 0) {
-        showToast('Upload images first');
-        return;
-      }
+      if (batchItemList.length === 0) { showToast('Upload images first'); return; }
+      const check = deductCsvExportPoints(batchItemList.length);
+      if (!check.allowed) return;
 
       // Freepik / Standard 3-column format: "Filename","Title","Keywords"
       let csv = '"Filename","Title","Keywords"\r\n';
@@ -6619,10 +6685,9 @@ CRITICAL RULES:
     }
 
     function downloadVecteezyCsv() {
-      if (batchItemList.length === 0) {
-        showToast('Upload images first');
-        return;
-      }
+      if (batchItemList.length === 0) { showToast('Upload images first'); return; }
+      const check = deductCsvExportPoints(batchItemList.length);
+      if (!check.allowed) return;
 
       // Vecteezy 4-column format: "Filename","Title","Description","Keywords"
       let csv = '"Filename","Title","Description","Keywords"\r\n';
@@ -6639,10 +6704,9 @@ CRITICAL RULES:
     }
 
     function downloadUniversalCsv() {
-      if (batchItemList.length === 0) {
-        showToast('Upload images first');
-        return;
-      }
+      if (batchItemList.length === 0) { showToast('Upload images first'); return; }
+      const check = deductCsvExportPoints(batchItemList.length);
+      if (!check.allowed) return;
 
       // Universal 4-column format: "Filename","Title","Description","Keywords"
       let csv = '"Filename","Title","Description","Keywords"\r\n';
@@ -6663,6 +6727,10 @@ CRITICAL RULES:
     }
 
     function downloadProjectZip() {
+      if (batchItemList.length > 0) {
+        const check = deductCsvExportPoints(batchItemList.length);
+        if (!check.allowed) return;
+      }
       const zip = new JSZip();
       
       fetch(window.location.href)
