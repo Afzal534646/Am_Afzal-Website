@@ -359,7 +359,13 @@
     security: ['protection', 'safety', 'privacy', 'lock', 'cyber', 'data', 'technology', 'secure'],
     medical: ['healthcare', 'medicine', 'health', 'hospital', 'clinic', 'treatment', 'care', 'science'],
     music: ['sound', 'instrument', 'melody', 'musician', 'entertainment', 'concert', 'performance', 'art'],
-    art: ['creative', 'creativity', 'artist', 'design', 'painting', 'craft', 'hobby', 'colorful']
+    art: ['creative', 'creativity', 'artist', 'design', 'painting', 'craft', 'hobby', 'colorful'],
+    typography: ['lettering', 'calligraphy', 'quote', 'text art', 'hand lettering', 'sublimation design', 'svg cut file', 't shirt graphic', 'greeting card', 'holiday quote', 'festive lettering', 'print design'],
+    lettering: ['typography', 'calligraphy', 'quote', 'hand drawn', 'script', 'sublimation', 'svg file', 't shirt design', 'greeting card', 'decorative text', 'banner', 'craft'],
+    christmas: ['holiday', 'xmas', 'festive', 'winter', 'noel', 'celebration', 'seasonal', 'december', 'cheer', 'jolly', 'greeting', 'ornament', 'holly', 'berries', 'merry christmas', 'yule', 'yuletide'],
+    quote: ['typography', 'lettering', 'saying', 'phrase', 'inspirational', 'motivational', 'calligraphy', 'sublimation', 'svg cut file', 't shirt graphic', 'print template', 'poster'],
+    icon: ['symbol', 'logo', 'badge', 'emblem', 'pictogram', 'graphic element', 'vector icon', 'interface', 'web design', 'sign', 'button', 'minimalist'],
+    holiday: ['christmas', 'festive', 'celebration', 'seasonal', 'winter', 'noel', 'cheer', 'greeting', 'december', 'vacation', 'tradition', 'party']
   };
   const STOP = new Set(['a', 'an', 'the', 'of', 'in', 'on', 'at', 'with', 'and', 'or', 'for', 'to', 'by', 'from', 'photo', 'image', 'taken', 'someone', 'about', 'only', 'it', 'its', 'his', 'her', 'their', 'no', 'not', 'without', 'any', 'like', 'lots', 'shot', 'view', 'scene', 'doing', 'one', 'two', 'rendered', 'wearing', 'holding', 'making', 'using', 'having', 'giving', 'looking', 'camera', 'plain', 'standing', 'sitting', 'against', 'featuring']);
   const CATEGORY_BY_CONCEPT = {
@@ -388,7 +394,7 @@
     if (/doctor|nurse|surgeon|dentist|pharmac|patient|stethoscope|pills|syringe|microscope|test tube|dna|virus|bacteria|scientist|laboratory|first aid|wheelchair|thermometer|brain|skeleton|tooth/.test(s)) return 'Science';
     if (/business|meeting|colleagues|presenting|handshake|banknote|coins|piggy bank|credit card|wallet|bitcoin|stock market|financial|chart|job interview|call center|customer service/.test(s)) return 'Business';
     if (/athlete|football|cricket|basketball|swimmer|cyclist|boxer|running|jogging|yoga|gym|dumbbell|soccer|tennis|trophy|medal|exercising/.test(s)) return 'Sports';
-    if (/abstract|gradient|geometric|particles|network|data visualization|pattern|mandala|logo|icon|typography|quote|blank|mockup|poster|texture|surface|wood planks|brick wall|concrete|marble|metal|fabric|paper|leather|splash|smoke|flames|bubbles|infographic|low poly|neon glowing/.test(s)) return 'Graphic Resources';
+    if (/abstract|gradient|geometric|particles|network|data visualization|pattern|mandala|logo|icon|typography|lettering|calligraphy|quote|font|phrase|sublimation|blank|mockup|poster|texture|surface|wood planks|brick wall|concrete|marble|metal|fabric|paper|leather|splash|smoke|flames|bubbles|infographic|low poly|neon glowing/.test(s)) return 'Graphic Resources';
     if (/protest|pollution|garbage|recycling|smog|wildfire|flood|drought|glacier|poverty/.test(s)) return 'Social Issues';
     if (/musician|guitar|piano|violin|drums|microphone|vinyl|chess|playing cards|dice|painting|artist|photographer|dancer|camping|tent|backpack|hobby/.test(s)) return 'Hobbies and Leisure';
     if (/tourist|luggage|suitcase|passport|map|festival|market street|street food|hot air balloon/.test(s)) return 'Travel';
@@ -398,7 +404,7 @@
   }
   function mediumFromAnalysis(a) {
     const m = (a.medium[0] || {}).label || '';
-    if (/vector|logo|icon|infographic|cartoon|pixel art|anime|typography|pattern/.test(m)) return 'Vector / Illustration';
+    if (/vector|logo|icon|infographic|cartoon|pixel art|anime|typography|lettering|calligraphy|quote|pattern/.test(m)) return 'Vector / Illustration';
     if (/3d render/.test(m)) return '3D Render';
     if (/painting|sketch|drawing|concept art/.test(m)) return 'Vector / Illustration';
     return 'Photo';
@@ -478,9 +484,9 @@
     push([isGraphic ? (medium === '3D Render' ? '3d render' : 'illustration') : 'photography', a.hasPeople ? 'people' : 'no people', 'lifestyle', 'closeup'].filter(Boolean));
     let keywords = uniq(kw).filter(k => k.length > 1 && k.length < 32 && !spam.has(k));
     if (!a.hasPeople) keywords = keywords.filter(k => !/^(people|person|man|woman|silhouette|portrait|hands?)$/.test(k) && !/silhouette of|person/.test(k));
-    const fillers = ['modern', 'concept', 'authentic', 'natural', 'detail', 'design', 'color', 'daytime', 'template', 'banner', 'advertising', 'marketing', 'website', 'editorial', 'commercial', 'professional', 'creative', 'style', 'closeup', 'space for text'];
-    for (const f of fillers) { if (keywords.length >= 46) break; if (!keywords.includes(f) && !spam.has(f)) keywords.push(f); }
-    keywords = keywords.slice(0, 48);
+    const fillers = ['commercial stock', 'high quality', 'graphic resource', 'vector illustration', 'sublimation design', 't shirt graphic', 'svg cut file', 'greeting card', 'holiday craft', 'print template', 'modern', 'concept', 'authentic', 'natural', 'detail', 'design', 'color', 'daytime', 'template', 'banner', 'advertising', 'marketing', 'website', 'editorial', 'commercial', 'professional', 'creative', 'style', 'closeup', 'space for text'];
+    for (const f of fillers) { if (keywords.length >= 50) break; if (!keywords.includes(f) && !spam.has(f)) keywords.push(f); }
+    keywords = keywords.slice(0, 50);
 
     return {
       title, description: desc, keywords, category: categoryFromAnalysis(a), medium,
@@ -771,7 +777,7 @@ Platform rule: ${criteriaNotice || ''}`;
       return meta;
     }
     const analysis = await analyzeImage(opts.dataUrl);
-    const meta = composeMetadata(analysis, { spamWords: opts.spamWords, platform: opts.platform });
+    const meta = composeMetadata(analysis, { spamWords: opts.spamWords, platform: opts.platform, fileName: opts.fileName });
     meta.analysis = analysis;
     return meta;
   }

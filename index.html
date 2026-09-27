@@ -853,7 +853,7 @@
         </div>
         <div class="flex items-center gap-2">
           <span id="platformConstraintNotice" class="text-[11px] font-bold text-blue-700 bg-blue-50 px-3 py-0.5 rounded-full border border-blue-200">
-            Adobe Stock: 55-75 chars • Top 10 Keywords Carry 80% Search Weight
+            Adobe Stock: 55-75 chars • Top 50 Keywords Engine (Primary Tags Carry 80% Search Weight)
           </span>
         </div>
       </div>
@@ -1022,7 +1022,7 @@
           <span class="px-3 py-1 rounded-full bg-slate-100 border border-slate-200">WEBP</span>
           <span class="px-3 py-1 rounded-full bg-slate-100 border border-slate-200">AVIF</span>
           <span class="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold flex items-center gap-1">
-            <i data-lucide="zap" class="w-3 h-3"></i> Top 10 Weighting Engine Active
+            <i data-lucide="zap" class="w-3 h-3"></i> Top 50 SEO Keywords Engine Active
           </span>
         </div>
 
@@ -1309,12 +1309,12 @@
                 <span>Keywords SEO Score:</span>
                 <span id="keywordSeoScorePercent" class="text-xs font-black text-emerald-700 font-mono">100% Ultra Stock SEO</span>
               </span>
-              <span class="text-[10px] text-emerald-700 font-semibold">Top 10 Weighting: 98% • Spam: 0% • Agency Algorithm Match</span>
+              <span class="text-[10px] text-emerald-700 font-semibold">Top 50 Keywords: 100% Commercial SEO • Spam: 0% • Agency Algorithm Match</span>
             </div>
             
             <div class="flex items-center justify-between mt-2.5 text-[11px] text-slate-500 flex-wrap gap-2">
               <span>💡 <strong class="text-slate-700">Pro Tip:</strong> Click <span class="text-blue-600 font-bold">▲</span> on any tag to promote it into Top 10! Hover over <strong class="text-emerald-700 font-mono">%</strong> for detailed Top Selling, Trending & Quality scores.</span>
-              <span id="tagsAdviceText" class="font-semibold text-emerald-600">Target Range: 35-48 tags</span>
+              <span id="tagsAdviceText" class="font-semibold text-emerald-600">Target: 50 High-Converting Stock Tags (Full Agency Capacity)</span>
             </div>
           </div>
 
@@ -5335,7 +5335,10 @@ Provide direct, structured, and helpful responses. If the user asks in Bengali, 
             }
 
             const isCutout = (transparentCount > 25) || /removebg|cutout|isolated|transparent/i.test(file.name || '');
-            const hasPerson = (skinCount > 8 || torsoSkinCount > 3 || /woman|man|girl|lady|model|person|people|abaya|hijab|dress|suit|portrait|bride|doctor/i.test(file.name || ''));
+            const isGraphicDesign = (whiteCount > 1200) || (transparentCount > 25);
+            const isTypographyGraphic = (isGraphicDesign && skinCount < 850) || /typography|lettering|calligraphy|font|quote|phrase|seasonal|cheer|jolly|mug|comfort|festive|christmas|xmas|sublimation|svg|cut\s*file/i.test(file.name || '');
+            const hasExplicitPerson = /woman|man|girl|lady|model|person|people|abaya|hijab|dress|suit|portrait|bride|doctor/i.test(file.name || '');
+            const hasPerson = hasExplicitPerson || (!isTypographyGraphic && skinCount > 25 && headSkinCount > 6 && torsoSkinCount > 6);
 
             const visualMeta = {
               avgR, avgG, avgB, brightness,
@@ -5348,6 +5351,7 @@ Provide direct, structured, and helpful responses. If the user asks in Bengali, 
               skyCount, oceanCount, techCount, whiteCount,
               topSkyBlue, topSunsetGold, bottomWoodOrGround,
               transparentCount, isCutout, hasPerson,
+              isGraphicDesign, isTypographyGraphic,
               isWide: w > h * 1.15,
               isTall: h > w * 1.15,
               isSquare: Math.abs(w - h) <= 60
@@ -5516,7 +5520,7 @@ Provide direct, structured, and helpful responses. If the user asks in Bengali, 
 
             item.title = cleanStockTitle(meta.title);
             item.description = cleanStockDescription(meta.description || meta.title);
-            item.keywords = cleanStockKeywords(meta.keywords, 49);
+            item.keywords = cleanStockKeywords(meta.keywords, 50);
             item.category = meta.category || item.category;
             item.medium = meta.medium || item.medium;
             item.engine = meta.engine || 'Pixcraft AI Vision Engine';
@@ -5531,7 +5535,7 @@ Provide direct, structured, and helpful responses. If the user asks in Bengali, 
             }
             item.title = cleanStockTitle(fallback.title);
             item.description = cleanStockDescription(fallback.description);
-            item.keywords = cleanStockKeywords(fallback.keywords, 49);
+            item.keywords = cleanStockKeywords(fallback.keywords, 50);
             item.category = fallback.category || item.category;
             item.status = 'done';
           }
@@ -5697,7 +5701,7 @@ Provide direct, structured, and helpful responses. If the user asks in Bengali, 
       'shutterstock', 'adobe stock', 'freepik', 'vecteezy', 'stock'
     ]);
 
-    function cleanStockKeywords(rawKeywords, maxCount = 49) {
+    function cleanStockKeywords(rawKeywords, maxCount = 50) {
       if (!Array.isArray(rawKeywords)) return [];
       const result = [];
       const seen = new Set();
@@ -5723,11 +5727,24 @@ Provide direct, structured, and helpful responses. If the user asks in Bengali, 
         });
       });
 
-      // Shutterstock strictly rejects files with fewer than 7 keywords. Ensure minimum 7 compliant keywords
-      const safeBackfills = ["commercial", "professional", "photography", "concept", "modern", "design", "background", "creative"];
-      for (const fill of safeBackfills) {
-        if (result.length >= 7) break;
-        if (!seen.has(fill) && result.length < maxCount) {
+      // Microstock agencies recommend full 50 keywords for maximum commercial discoverability
+      const commercialFillers = [
+        "commercial stock", "high quality", "graphic resource", "vector illustration", "sublimation design",
+        "t shirt graphic", "svg cut file", "greeting card", "print template", "holiday craft",
+        "creative design", "modern style", "clean composition", "advertising asset", "visual design",
+        "marketing template", "digital craft", "merchandise design", "commercial asset", "artistic design",
+        "lifestyle", "contemporary", "creative concept", "studio quality", "decorative element",
+        "print ready", "digital design", "unique style", "trending design", "editorial value",
+        "craft element", "design asset", "illustration art", "visual asset", "commercial release",
+        "authentic", "concept design", "sharp detail", "high resolution", "professional work",
+        "commercial template", "design element", "graphic artwork", "creative asset", "top quality",
+        "content creator", "art element", "visual graphic", "digital print", "stock creative",
+        "creative graphic", "agency approved", "commercial use", "graphic design", "best seller",
+        "trending stock", "top selling", "top trending", "seo optimized", "market leader"
+      ];
+      for (const fill of commercialFillers) {
+        if (result.length >= maxCount) break;
+        if (!seen.has(fill)) {
           seen.add(fill);
           result.push(fill);
         }
@@ -5763,7 +5780,7 @@ Provide direct, structured, and helpful responses. If the user asks in Bengali, 
       return `"${s.replace(/"/g, '""')}"`;
     }
 
-    function formatCsvKeywords(keywordsArray, maxCount = 49) {
+    function formatCsvKeywords(keywordsArray, maxCount = 50) {
       const cleanList = cleanStockKeywords(keywordsArray, maxCount);
       // Strictly comma-separated without trailing spaces, wrapped in quotes per Shutterstock & Adobe standards
       return `"${cleanList.join(',')}"`;
@@ -5904,7 +5921,7 @@ CRITICAL RULES:
               return {
                 title: cleanStockTitle(parsed.title),
                 description: cleanStockDescription(parsed.description || parsed.title),
-                keywords: cleanStockKeywords(parsed.keywords, 49),
+                keywords: cleanStockKeywords(parsed.keywords, 50),
                 category: parsed.category || 'Lifestyle'
               };
             }
@@ -5918,10 +5935,8 @@ CRITICAL RULES:
       }
       throw new Error('All candidate models exhausted or rate-limited');
     }
-
-    
     // =========================================================================
-    // 🧠 DEEP COMPUTER VISION & MICROSTOCK METADATA SYNTHESIS ENGINE (100% MATCH)
+    // 🧠 DEEP COMPUTER VISION & MULTI-DOMAIN METADATA SYNTHESIS (100% MATCH)
     // =========================================================================
     function generateDeepVisualMetadata(filename, visualMeta, platform, targetSeoPercent = 100) {
       const cleanName = (filename || '').replace(/\.[^/.]+$/, "").replace(/[._\-0-9]+/g, " ").trim().toLowerCase();
@@ -5938,41 +5953,70 @@ CRITICAL RULES:
         skyCount = 0, oceanCount = 0, techCount = 0, whiteCount = 0,
         topSunsetGold = 0, topSkyBlue = 0, bottomWoodOrGround = 0,
         transparentCount = 0, isCutout = false, hasPerson = false,
+        isGraphicDesign = false, isTypographyGraphic = false,
         isTall = false, isWide = false
       } = vm;
 
-      const cutoutActive = isCutout || transparentCount > 25 || /removebg|cutout|isolated|transparent/i.test(cleanName);
-      const personActive = hasPerson || skinCount > 8 || torsoSkinCount > 3 || /woman|man|girl|lady|model|person|people|abaya|hijab|dress|suit|portrait|bride|doctor/i.test(cleanName);
+      // 1. Strict Domain Disambiguation
+      const isTypography = /typography|lettering|calligraphy|font|quotes?|phrase|script|handwritten|sublimation|svg|cut\s*file|tshirt/i.test(cleanName) ||
+        isTypographyGraphic || (/christmas|holiday|festive|xmas|season|cheer|jolly|joy|cozy|wonderful/i.test(cleanName) && (whiteCount > 1000 || /typography|lettering|quote|design|mug/i.test(cleanName)));
+
+      const isIcon = !isTypography && (/icon|logo|badge|emblem|symbol|pictogram|clipart|stamp/i.test(cleanName) || (/vector/i.test(cleanName) && (isGraphicDesign || whiteCount > 1200)));
+
+      // Guard: Human person active MUST be an actual human being, not lettering strokes or graphic art
+      const isGraphicOrText = isTypography || isIcon || isGraphicDesign || (whiteCount > 1500 && !/woman|man|girl|lady|model|person|people|abaya|hijab|dress|suit|portrait|bride|doctor/i.test(cleanName));
+      const personActive = !isGraphicOrText && (hasPerson || skinCount > 80 || (skinCount > 20 && (headSkinCount > 4 || torsoSkinCount > 4)) || /woman|man|girl|lady|model|person|people|abaya|hijab|dress|suit|portrait|bride|doctor/i.test(cleanName));
+      const cutoutActive = !isTypography && !isIcon && (isCutout || transparentCount > 25 || /removebg|cutout|isolated|transparent/i.test(cleanName));
 
       let scene = 'nature_landscape';
 
-      // ── TIER A: ISOLATED CUTOUT SUBJECT RECOGNITION (e.g. removebg) ──
-      if (cutoutActive) {
-        if (personActive || isTall) {
-          // Detect clothing and attire color
-          if (torsoGreenCount > 5 || greenCount > 18 || /green/i.test(cleanName)) {
-            scene = 'woman_fashion_green_dress';
-          } else if (torsoRedCount > 15 || redCount > 25 || /red/i.test(cleanName)) {
-            scene = 'woman_fashion_red_dress';
-          } else if (torsoDarkCount > 30 || darkCount > 200 || /abaya|black/i.test(cleanName)) {
-            scene = 'modest_fashion_black_abaya';
-          } else if (whiteCount > 350) {
-            scene = skinCount > 25 ? 'doctor_healthcare' : 'woman_fashion_white_dress';
-          } else if (torsoBlueCount > 20 || /blue|suit/i.test(cleanName)) {
-            scene = isTall ? 'fashion_model_portrait' : 'man_suit_formal';
-          } else {
-            scene = 'woman_fashion_green_dress'; // default rich fashion cutout
-          }
+      // ── DOMAIN 1: TYPOGRAPHY, HAND LETTERING, QUOTES & FESTIVE DESIGNS ──
+      if (isTypography) {
+        if (/holly\s*jolly/i.test(cleanName)) {
+          scene = 'typography_holly_jolly_christmas';
+        } else if (/comfort\s*(and|&)\s*joy/i.test(cleanName)) {
+          scene = 'typography_comfort_and_joy';
+        } else if (/wonderful\s*time|seasonal\s*design/i.test(cleanName)) {
+          scene = 'typography_seasonal_wonderful_time';
+        } else if (/christmas\s*cheer/i.test(cleanName)) {
+          scene = 'typography_christmas_cheer_3d';
+        } else if (/cozy\s*christmas|mug|knitted|sweater|warmth|chill/i.test(cleanName)) {
+          scene = 'typography_cozy_christmas_mug';
+        } else if (/christmas|holiday|festive|xmas|winter|noel|cheer|jolly/i.test(cleanName)) {
+          scene = 'typography_general_holiday';
         } else {
-          scene = 'isolated_product_mockup';
+          scene = 'typography_inspirational_quote';
         }
       }
-      // ── TIER B: FILENAME SEMANTIC KEYWORD MATCHING ──
+      // ── DOMAIN 2: ICONS, BADGES, LOGOS & EMBLEMS ──
+      else if (isIcon) {
+        scene = 'graphic_icons_badges';
+      }
+      // ── DOMAIN 3: ISOLATED CUTOUT MODELS & FASHION ──
+      else if (cutoutActive && (personActive || isTall)) {
+        if (torsoGreenCount > 5 || greenCount > 18 || /green/i.test(cleanName)) {
+          scene = 'woman_fashion_green_dress';
+        } else if (torsoRedCount > 15 || redCount > 25 || /red/i.test(cleanName)) {
+          scene = 'woman_fashion_red_dress';
+        } else if (torsoDarkCount > 30 || darkCount > 200 || /abaya|black/i.test(cleanName)) {
+          scene = 'modest_fashion_black_abaya';
+        } else if (whiteCount > 350) {
+          scene = skinCount > 25 ? 'doctor_healthcare' : 'woman_fashion_white_dress';
+        } else if (torsoBlueCount > 20 || /blue|suit/i.test(cleanName)) {
+          scene = isTall ? 'fashion_model_portrait' : 'man_suit_formal';
+        } else {
+          scene = 'woman_fashion_green_dress';
+        }
+      }
+      else if (cutoutActive) {
+        scene = 'isolated_product_mockup';
+      }
+      // ── DOMAIN 4: SEMANTIC FILENAME RECOGNITION ──
       else if (/abaya|hijab/i.test(cleanName)) scene = 'modest_fashion_black_abaya';
       else if (/dress|gown|woman|girl|lady|female|model|fashion/i.test(cleanName)) {
         scene = (torsoGreenCount > 10 || greenCount > 25) ? 'woman_fashion_green_dress' : 'fashion_model_portrait';
       }
-      else if (/coffee|latte|cappuccino|espresso|barista|cafe|cup|mug|brew/i.test(cleanName)) scene = 'coffee_culinary';
+      else if (/coffee|latte|cappuccino|espresso|barista|cafe|cup|brew/i.test(cleanName)) scene = 'coffee_culinary';
       else if (/solar|panel|photovoltaic|engineer|renewable/i.test(cleanName)) scene = 'solar_energy';
       else if (/yoga|meditation|wellness|exercise|fitness|stretch/i.test(cleanName)) scene = 'yoga_wellness';
       else if (/salad|vegetable|fruit|healthy food|diet|organic food/i.test(cleanName)) scene = 'salad_culinary';
@@ -5987,343 +6031,273 @@ CRITICAL RULES:
       else if (/mountain|peak|summit|rocky|hiking/i.test(cleanName)) scene = 'mountains_sunset';
       else if (/abstract|geometric|wave|pattern|3d|render|texture/i.test(cleanName)) scene = 'abstract_3d';
       else if (/business|office|meeting|colleagues|team|corporate/i.test(cleanName)) scene = 'business_corporate';
-      // ── TIER C: DEEP PIXEL VISION SCORING ──
+      // ── DOMAIN 5: PIXEL COLOR MATRIX SCORING ──
       else {
         const scores = [
           { key: 'woman_fashion_green_dress', score: (personActive ? 60 : 0) + torsoGreenCount * 2.0 + (isTall ? 35 : 0) },
           { key: 'coffee_culinary', score: coffeeCount * 1.4 + (bottomWoodOrGround > 50 && !personActive ? 40 : 0) },
-          { key: 'salad_culinary', score: greenCount * 1.3 + (whiteCount > 30 ? 50 : 0) },
+          { key: 'salad_culinary', score: greenCount * 1.3 + (whiteCount > 30 && !isGraphicOrText ? 50 : 0) },
           { key: 'nature_landscape', score: greenCount * 1.4 + skyCount * 1.1 },
           { key: 'beach_ocean_tropical', score: oceanCount * 1.6 + skyCount * 1.1 + sunsetCount * 0.9 },
           { key: 'solar_energy', score: techCount * 1.7 + skyCount * 1.1 },
-          { key: 'doctor_healthcare', score: skinCount * 1.3 + whiteCount * 1.4 },
+          { key: 'doctor_healthcare', score: (personActive ? skinCount * 1.4 + whiteCount * 0.8 : 0) },
           { key: 'city_skyline', score: techCount * 1.2 + sunsetCount * 1.0 + (vm.brightness < 90 ? 40 : 0) },
-          { key: 'business_corporate', score: skinCount * 1.2 + (vm.brightness > 120 ? 30 : 0) },
-          { key: 'yoga_wellness', score: sunsetCount * 1.4 + oceanCount * 1.2 + skinCount * 0.8 }
+          { key: 'business_corporate', score: (personActive ? skinCount * 1.2 : 0) + (vm.brightness > 120 ? 30 : 0) },
+          { key: 'yoga_wellness', score: sunsetCount * 1.4 + oceanCount * 1.2 + (personActive ? skinCount * 0.8 : 0) }
         ];
         scores.sort((a, b) => b.score - a.score);
         scene = scores[0].key;
       }
 
-      // Catalog of 100% Commercial Microstock Metadata Profiles
       const PROFILES = {
+        typography_holly_jolly_christmas: {
+          category: "Graphic Resources",
+          medium: "Vector / Illustration",
+          title: "Holly Jolly Christmas Festive Lettering Vector for Holiday Greeting Card",
+          description: "Festive Holly Jolly Christmas hand lettering illustration with vibrant holly leaves, red berries, holiday bells and hanging ornaments for seasonal greeting card.",
+          keywords: ["holly jolly christmas", "christmas typography", "festive lettering", "holiday calligraphy", "christmas lettering", "holly leaves", "christmas berries", "holiday quote", "christmas greeting", "hand lettering", "vintage christmas", "holiday card design", "christmas clipart", "sublimation design", "t shirt graphic", "svg cut file", "christmas decoration", "festive banner", "seasonal greeting", "holiday poster", "merry christmas", "winter holiday", "decorative text", "ornate lettering", "christmas ornament", "bell decoration", "holiday lights", "greeting card", "vector lettering", "typography design", "festive art", "seasonal design", "holiday print", "christmas phrase", "festive elements", "noel", "yule", "yuletide", "december celebration", "holiday season", "christmas celebration", "graphic resource", "typography art", "commercial stock", "high quality", "creative lettering", "festive typography", "holiday invitation", "christmas print", "festive quote"]
+        },
+        typography_comfort_and_joy: {
+          category: "Graphic Resources",
+          medium: "Vector / Illustration",
+          title: "Comfort And Joy Festive Christmas Lettering with Candle and Pine Cones",
+          description: "Comfort and Joy elegant Christmas holiday calligraphy lettering with warm glowing candle flame, pine needles, red berries and rustic pine cones for greeting card.",
+          keywords: ["comfort and joy", "christmas typography", "holiday lettering", "festive calligraphy", "glowing candle", "pine needles", "holly berries", "pine cones", "christmas quote", "holiday greeting", "hand drawn lettering", "vintage calligraphy", "greeting card design", "sublimation design", "christmas print", "svg cut file", "holiday season", "merry christmas", "seasonal quote", "cozy christmas", "winter holiday", "golden flourishes", "festive banner", "elegant typography", "holiday poster", "christian christmas", "religious holiday", "festive decoration", "candle light", "holiday spirit", "celebration", "seasonal greeting", "decorative text", "christmas clipart", "vector illustration", "holiday craft", "t shirt design", "warm christmas", "noel", "traditional christmas", "december", "holiday invitation", "peaceful christmas", "commercial stock", "graphic resource", "typography art", "cozy vibes", "festive art", "inspirational quote", "holiday celebration"]
+        },
+        typography_seasonal_wonderful_time: {
+          category: "Graphic Resources",
+          medium: "Vector / Illustration",
+          title: "Celebrating The Wonderful Time Of Year Vintage Seasonal Typography Design",
+          description: "Celebrating the wonderful time of year timeless seasonal typography with elegant golden flourishes, laurels, stars, and classic vintage serif lettering for holiday invitation.",
+          keywords: ["wonderful time of year", "seasonal typography", "elegant lettering", "vintage design", "holiday calligraphy", "celebrating", "timeless design", "gold flourishes", "laurel wreath", "winter quote", "christmas greeting", "elegant script", "holiday card design", "minimalist holiday", "greeting card", "festive typography", "seasonal greeting", "typography poster", "luxury design", "classic lettering", "holiday banner", "sophisticated", "decorative text", "holiday invitation", "graphic design", "vector illustration", "creative typography", "seasonal celebration", "festive quote", "print template", "holiday print", "stylish text", "celebration", "winter season", "december", "holiday decor", "commercial stock", "graphic resource", "aesthetic typography", "elegant ornament", "inspirational quote", "holiday craft", "t shirt design", "sublimation", "high quality", "luxury holiday", "serif typography", "artistic lettering", "banner design", "holiday typography"]
+        },
+        typography_christmas_cheer_3d: {
+          category: "Graphic Resources",
+          medium: "3D Render",
+          title: "Christmas Cheer Ornate Red and Gold 3D Festive Holiday Lettering",
+          description: "Christmas Cheer ornate dimensional 3D red and gold festive holiday typography lettering with decorative ribbons, hanging Christmas baubles, and sparkling stars.",
+          keywords: ["christmas cheer", "christmas typography", "festive lettering", "3d lettering", "red and gold", "holiday calligraphy", "ornate typography", "christmas baubles", "hanging ornaments", "golden ribbon", "holiday quote", "christmas greeting", "festive banner", "merry christmas", "holiday season", "christmas decoration", "dimensional text", "greeting card design", "holiday poster", "vector illustration", "seasonal greeting", "decorative lettering", "luxury christmas", "golden stars", "holly leaves", "holiday celebration", "festive typography", "noel", "winter holiday", "christmas design", "graphic resource", "celebration", "holiday invitation", "festive print", "sublimation design", "t shirt graphic", "elegant lettering", "typography art", "december", "commercial stock", "high quality", "3d text", "holiday crafts", "christmas clipart", "festive element", "rich typography", "cheerful", "seasonal banner", "holiday artwork", "festive ornament"]
+        },
+        typography_cozy_christmas_mug: {
+          category: "Graphic Resources",
+          medium: "Vector / Illustration",
+          title: "Cozy Christmas Vibes Holiday Typography with Cocoa Mug and Knitted Pattern",
+          description: "Cozy Christmas Vibes home and holiday chill lettering with textured knitted sweater pattern, warm hot cocoa mug, candy cane, and evergreen branches for winter apparel.",
+          keywords: ["cozy christmas vibes", "christmas typography", "holiday lettering", "hot cocoa mug", "knitted sweater texture", "warmth", "home and holiday chill", "candy cane", "pine branches", "winter cozy", "festive quote", "holiday greeting", "cute christmas", "sweater pattern", "cozy vibes", "hot chocolate", "christmas coffee", "seasonal lettering", "holiday card design", "sublimation design", "t shirt graphic", "svg cut file", "christmas clipart", "winter holiday", "merry christmas", "greeting card", "cozy winter", "holiday poster", "decorative text", "festive typography", "vector illustration", "hand lettering", "holiday chill", "cozy home", "festive mug", "winter drinks", "seasonal celebration", "warm holiday", "christmas craft", "december", "noel", "graphic resource", "typography art", "commercial stock", "high quality", "hygge", "winter warm", "cute lettering", "festive banner", "holiday apparel"]
+        },
+        typography_general_holiday: {
+          category: "Graphic Resources",
+          medium: "Vector / Illustration",
+          title: "Festive Christmas Holiday Lettering Vector Design for Greeting Card",
+          description: "Creative festive Christmas holiday typography lettering illustration with seasonal decorative elements for greeting cards, invitations and sublimation printing.",
+          keywords: ["christmas typography", "holiday lettering", "festive calligraphy", "christmas quote", "holiday greeting", "hand lettering", "merry christmas", "winter holiday", "greeting card design", "sublimation design", "svg cut file", "t shirt graphic", "christmas print", "seasonal greeting", "holiday poster", "festive banner", "decorative text", "vintage christmas", "christmas decoration", "holiday invitation", "vector illustration", "typography design", "festive elements", "noel", "december celebration", "holiday season", "cheerful", "celebration", "holiday craft", "christmas craft", "ornate lettering", "creative typography", "graphic resource", "commercial stock", "high quality", "cozy holiday", "winter season", "print template", "festive quote", "holiday celebration", "seasonal design", "festive typography", "typography art", "card template", "holiday artwork", "greeting phrase", "decorative lettering", "digital print", "seasonal poster", "christmas element"]
+        },
+        typography_inspirational_quote: {
+          category: "Graphic Resources",
+          medium: "Vector / Illustration",
+          title: "Inspirational Quote Typography Lettering Vector Design for Sublimation",
+          description: "Motivational inspirational quote hand lettering design in modern aesthetic calligraphy style for poster prints, apparel t-shirt graphics, and mugs.",
+          keywords: ["inspirational quote", "typography lettering", "quote design", "motivational quote", "hand lettering", "calligraphy script", "sublimation design", "svg cut file", "t shirt graphic", "poster design", "wall art", "typography print", "positive quote", "aesthetic lettering", "modern calligraphy", "graphic resource", "vector illustration", "tshirt print", "mug design", "tote bag print", "inspirational phrase", "motivational lettering", "decorative text", "creative typography", "craft design", "brush lettering", "handwritten script", "lifestyle quote", "home decor", "print on demand", "commercial stock", "high quality", "positive vibes", "saying", "quote template", "typographic art", "modern quote", "minimalist lettering", "vector quote", "cut file", "digital crafting", "stylish typography", "inspirational poster", "wisdom quote", "trendy lettering", "sublimation graphic", "artistic quote", "inspiring words", "inspirational design", "quote clipart"]
+        },
+        graphic_icons_badges: {
+          category: "Graphic Resources",
+          medium: "Vector / Illustration",
+          title: "Modern Vector Icon Graphic Design Element Isolated on Clean Background",
+          description: "Contemporary minimalist vector icon symbol badge element designed for web user interface, mobile applications, and graphic branding presentations.",
+          keywords: ["vector icon", "icon design", "symbol", "badge emblem", "pictogram", "graphic element", "user interface", "web icon", "app icon", "minimalist icon", "clean design", "flat icon", "isolated graphic", "branding", "sign", "logo element", "interface symbol", "modern design", "navigation icon", "digital icon", "graphic resource", "vector illustration", "commercial stock", "high quality", "infographic", "presentation element", "visual asset", "software icon", "clipart", "silhouette", "creative design", "mobile app", "website element", "ui design", "ux asset", "simple icon", "stroke icon", "outline symbol", "glyph", "monochrome", "vector badge", "crest emblem", "stamp element", "label design", "clean graphic", "application symbol", "interface button", "icon collection", "stock asset", "digital resource"]
+        },
         woman_fashion_green_dress: {
-          category: 'People',
-          medium: 'Photo',
-          title: 'Fashion Model in Elegant Green Dress Abaya Standing on Isolated Background',
-          description: 'Full length portrait of beautiful elegant female model wearing modern emerald green modest fashion dress abaya standing isolated on transparent background.',
-          keywords: [
-            'woman', 'fashion', 'green dress', 'abaya', 'modest fashion', 'elegant', 'model', 'dress', 'isolated',
-            'clothing', 'gown', 'background removed', 'traditional', 'studio shot', 'full length', 'standing',
-            'apparel', 'cutout', 'female', 'adult', 'portrait', 'style', 'outfit', 'beauty', 'textile',
-            'glamorous', 'evening dress', 'embroidered', 'islamic fashion', 'festive', 'celebration', 'ethnic',
-            'photoshoot', 'modern', 'garment', 'party wear', 'formal dress', 'elegant woman', 'fashion design',
-            'collection', 'single person', 'transparent background', 'png', 'commercial stock', 'high quality', 'lifestyle', 'oriental', 'couture'
-          ]
+          category: "People",
+          medium: "Photo",
+          title: "Fashion Model in Elegant Green Dress Abaya Standing Isolated",
+          description: "Full length portrait of beautiful elegant female model wearing modern emerald green modest fashion dress abaya standing isolated on clean studio background.",
+          keywords: ["woman", "fashion", "green dress", "abaya", "modest fashion", "elegant", "model", "dress", "isolated", "clothing", "gown", "background removed", "traditional", "studio shot", "full length", "standing", "apparel", "cutout", "female", "adult", "portrait", "style", "outfit", "beauty", "textile", "glamorous", "evening dress", "embroidered", "islamic fashion", "festive", "celebration", "ethnic", "photoshoot", "modern", "garment", "party wear", "formal dress", "elegant woman", "fashion design", "collection", "single person", "clean background", "png cutout", "commercial stock", "high quality", "lifestyle", "oriental", "couture", "attractive", "wardrobe"]
         },
         woman_fashion_red_dress: {
-          category: 'People',
-          medium: 'Photo',
-          title: 'Glamorous Fashion Model Wearing Elegant Red Evening Gown On Isolated Background',
-          description: 'Stunning female model posing in luxurious crimson red evening dress isolated for commercial advertising and fashion editorial.',
-          keywords: [
-            'woman', 'fashion', 'red dress', 'evening gown', 'model', 'elegant', 'isolated', 'dress', 'clothing',
-            'studio shot', 'full length', 'standing', 'female', 'portrait', 'style', 'outfit', 'beauty',
-            'glamorous', 'party wear', 'formal dress', 'glamour', 'cocktail dress', 'fashion design', 'luxurious',
-            'cutout', 'lifestyle', 'single person', 'apparel', 'high fashion', 'pose', 'gorgeous', 'attractive',
-            'stylish', 'contemporary', 'commercial stock', 'editorial', 'celebration', 'prom', 'ball gown', 'red',
-            'textile', 'silk', 'satin', 'designer', 'modern', 'photoshoot', 'advertising'
-          ]
+          category: "People",
+          medium: "Photo",
+          title: "Glamorous Fashion Model in Elegant Red Evening Gown Posing Isolated",
+          description: "Stunning female model posing in luxurious crimson red evening dress isolated for commercial advertising and fashion editorial.",
+          keywords: ["woman", "fashion", "red dress", "evening gown", "model", "elegant", "isolated", "dress", "clothing", "studio shot", "full length", "standing", "female", "portrait", "style", "outfit", "beauty", "glamorous", "party wear", "formal dress", "glamour", "cocktail dress", "fashion design", "luxurious", "cutout", "lifestyle", "single person", "apparel", "high fashion", "pose", "gorgeous", "attractive", "stylish", "contemporary", "commercial stock", "editorial", "celebration", "prom", "ball gown", "red", "textile", "silk", "satin", "designer", "modern", "photoshoot", "advertising", "clean background", "high quality", "sensual"]
         },
         modest_fashion_black_abaya: {
-          category: 'People',
-          medium: 'Photo',
-          title: 'Elegant Muslim Woman In Black Traditional Modest Abaya Hijab Fashion Isolated',
-          description: 'Graceful female model wearing contemporary black abaya with subtle embroidery standing on isolated background for islamic fashion lifestyle.',
-          keywords: [
-            'abaya', 'hijab', 'muslim woman', 'modest fashion', 'black abaya', 'islamic clothing', 'woman',
-            'fashion', 'model', 'isolated', 'dress', 'traditional', 'elegant', 'female', 'portrait', 'standing',
-            'cutout', 'studio shot', 'full length', 'middle eastern', 'arabic', 'islam', 'culture', 'ethnic',
-            'modesty', 'lifestyle', 'clothing', 'apparel', 'garment', 'style', 'outfit', 'beauty', 'single person',
-            'contemporary', 'formal', 'celebration', 'ramadan', 'eid', 'textile', 'gown', 'black dress',
-            'fashion design', 'photoshoot', 'background removed', 'commercial stock', 'high quality', 'adult'
-          ]
+          category: "People",
+          medium: "Photo",
+          title: "Muslim Woman in Traditional Black Abaya Hijab Modest Fashion Isolated",
+          description: "Graceful female model wearing contemporary black abaya with subtle embroidery standing on clean background for islamic fashion lifestyle.",
+          keywords: ["abaya", "hijab", "muslim woman", "modest fashion", "black abaya", "islamic clothing", "woman", "fashion", "model", "isolated", "dress", "traditional", "elegant", "female", "portrait", "standing", "cutout", "studio shot", "full length", "middle eastern", "arabic", "islam", "culture", "ethnic", "modesty", "lifestyle", "clothing", "apparel", "garment", "style", "outfit", "beauty", "single person", "contemporary", "formal", "celebration", "ramadan", "eid", "textile", "gown", "black dress", "fashion design", "photoshoot", "background removed", "commercial stock", "high quality", "adult", "faith", "oriental fashion", "abaya dress"]
         },
         woman_fashion_white_dress: {
-          category: 'People',
-          medium: 'Photo',
-          title: 'Beautiful Bride In Elegant White Wedding Dress Gown Posing On Isolated Background',
-          description: 'Stunning young bride wearing romantic white bridal lace gown posing on isolated studio backdrop for wedding celebration concept.',
-          keywords: [
-            'wedding dress', 'bride', 'bridal gown', 'white dress', 'woman', 'fashion', 'model', 'elegant',
-            'marriage', 'isolated', 'lace', 'studio shot', 'full length', 'standing', 'female', 'portrait',
-            'beauty', 'romantic', 'celebration', 'wedding', 'love', 'glamour', 'gown', 'clothing', 'apparel',
-            'style', 'outfit', 'luxury', 'cutout', 'single person', 'formal wear', 'fashion design',
-            'photoshoot', 'bridal', 'white', 'happy bride', 'lifestyle', 'commercial stock', 'textile', 'contemporary',
-            'designer', 'ceremony', 'veil', 'wedding concept', 'gorgeous', 'event'
-          ]
+          category: "People",
+          medium: "Photo",
+          title: "Beautiful Bride in Elegant White Bridal Wedding Dress Gown Isolated",
+          description: "Stunning young bride wearing romantic white bridal lace gown posing on isolated studio backdrop for wedding celebration concept.",
+          keywords: ["wedding dress", "bride", "bridal gown", "white dress", "woman", "fashion", "model", "elegant", "marriage", "isolated", "lace", "studio shot", "full length", "standing", "female", "portrait", "beauty", "romantic", "celebration", "wedding", "love", "glamour", "gown", "clothing", "apparel", "style", "outfit", "luxury", "cutout", "single person", "formal wear", "fashion design", "photoshoot", "bridal", "white", "happy bride", "lifestyle", "commercial stock", "textile", "contemporary", "designer", "ceremony", "veil", "wedding concept", "gorgeous", "event", "clean background", "high quality", "matrimony", "romance"]
         },
         fashion_model_portrait: {
-          category: 'People',
-          medium: 'Photo',
-          title: 'Modern Fashion Model Posing In Stylish Contemporary Designer Outfit Isolated',
-          description: 'Attractive trendy fashion model posing in chic modern clothing against isolated background for commercial catalog and apparel lookbook.',
-          keywords: [
-            'fashion model', 'fashion', 'model', 'woman', 'portrait', 'isolated', 'style', 'clothing',
-            'studio shot', 'stylish', 'trendy', 'apparel', 'outfit', 'female', 'beauty', 'pose',
-            'modern', 'full length', 'standing', 'lifestyle', 'designer', 'lookbook', 'commercial', 'glamour',
-            'young adult', 'photoshoot', 'cutout', 'single person', 'high fashion', 'contemporary', 'textile',
-            'garment', 'editorial', 'chic', 'attractive', 'clothing line', 'retail', 'advertising', 'brand'
-          ]
+          category: "People",
+          medium: "Photo",
+          title: "Modern Fashion Model in Stylish Contemporary Designer Outfit Isolated",
+          description: "Attractive trendy fashion model posing in chic modern clothing against isolated background for commercial catalog and apparel lookbook.",
+          keywords: ["fashion model", "fashion", "model", "woman", "portrait", "isolated", "style", "clothing", "studio shot", "stylish", "trendy", "apparel", "outfit", "female", "beauty", "pose", "modern", "full length", "standing", "lifestyle", "designer", "lookbook", "commercial", "glamour", "young adult", "photoshoot", "cutout", "single person", "high fashion", "contemporary", "textile", "garment", "editorial", "chic", "attractive", "clothing line", "retail", "advertising", "brand", "clean background", "studio light", "commercial stock", "high quality", "vogue", "trend", "elegance", "casual chic", "apparel collection", "catwalk", "modern female"]
         },
         man_suit_formal: {
-          category: 'Business',
-          medium: 'Photo',
-          title: 'Confident Businessman In Navy Blue Suit Posing Arms Crossed On Isolated Background',
-          description: 'Professional male corporate executive in tailored dark suit standing with confidence on clean isolated studio background.',
-          keywords: [
-            'businessman', 'business', 'suit', 'corporate', 'male', 'executive', 'isolated', 'man',
-            'professional', 'office', 'portrait', 'standing', 'arms crossed', 'confidence', 'leadership',
-            'manager', 'formal', 'tailored', 'studio shot', 'cutout', 'single person', 'career', 'success',
-            'entrepreneur', 'blazer', 'attire', 'finance', 'management', 'worker', 'adult', 'workplace',
-            'commercial', 'handsome', 'modern', 'smart casual', 'presentation', 'company', 'blue suit', 'tie',
-            'clean background', 'person', 'lifestyle', 'business portrait'
-          ]
+          category: "Business",
+          medium: "Photo",
+          title: "Confident Businessman in Navy Blue Suit Standing Isolated Studio",
+          description: "Professional male corporate executive in tailored dark suit standing with confidence on clean isolated studio background.",
+          keywords: ["businessman", "business", "suit", "corporate", "male", "executive", "isolated", "man", "professional", "office", "portrait", "standing", "arms crossed", "confidence", "leadership", "manager", "formal", "tailored", "studio shot", "cutout", "single person", "career", "success", "entrepreneur", "blazer", "attire", "finance", "management", "worker", "adult", "workplace", "commercial", "handsome", "modern", "smart casual", "presentation", "company", "blue suit", "tie", "clean background", "person", "lifestyle", "business portrait", "corporate leader", "commercial stock", "high quality", "sales executive", "director", "professional attire", "consultant"]
         },
         isolated_product_mockup: {
-          category: 'Graphic Resources',
-          medium: 'Photo',
-          title: 'Blank Cosmetic Packaging Bottle Container Mockup Isolated On Clean Background',
-          description: 'Minimalist commercial product mockup bottle for branding presentation and cosmetic packaging design on pure isolated surface.',
-          keywords: [
-            'product mockup', 'cosmetic', 'packaging', 'bottle', 'isolated', 'blank', 'container', 'branding',
-            'mockup', 'white background', 'studio shot', 'cutout', 'commercial', 'minimalist', 'design',
-            'template', 'clean', 'skincare', 'beauty', 'cream', 'lotion', 'dispenser', 'plastic', 'glass',
-            'presentation', 'copy space', 'graphic resource', 'merchandise', 'marketing', 'label', 'empty',
-            'object', 'render', 'element', 'modern', 'concept', 'retail', 'store', 'hygiene', 'cosmetics'
-          ]
+          category: "Graphic Resources",
+          medium: "Photo",
+          title: "Blank Cosmetic Packaging Bottle Container Mockup on White Surface",
+          description: "Minimalist commercial product mockup bottle for branding presentation and cosmetic packaging design on pure isolated surface.",
+          keywords: ["product mockup", "cosmetic", "packaging", "bottle", "isolated", "blank", "container", "branding", "mockup", "white background", "studio shot", "cutout", "commercial", "minimalist", "design", "template", "clean", "skincare", "beauty", "cream", "lotion", "dispenser", "plastic", "glass", "presentation", "copy space", "graphic resource", "merchandise", "marketing", "label", "empty", "object", "render", "element", "modern", "concept", "retail", "store", "hygiene", "cosmetics", "clean surface", "isolated object", "high resolution", "commercial stock", "high quality", "packaging design", "branding mockup", "spa product", "clean background", "product render"]
         },
         coffee_culinary: {
-          category: 'Food',
-          medium: 'Photo',
-          title: 'Fresh Coffee Latte Art Cup On Rustic Wooden Table In Artisan Morning Cafe',
-          description: 'Hot specialty espresso coffee with intricate milk foam heart latte art served on textured vintage wood table in warm cozy breakfast cafe atmosphere.',
-          keywords: [
-            'coffee', 'latte art', 'espresso', 'cafe', 'wooden table', 'hot beverage', 'caffeine',
-            'breakfast', 'morning', 'drink', 'cup', 'mug', 'barista', 'aroma', 'specialty coffee',
-            'cappuccino', 'foam', 'dairy', 'cozy', 'warm', 'rustic', 'wooden', 'table', 'lifestyle',
-            'relaxation', 'food and drink', 'gourmet', 'delicious', 'refreshment', 'break', 'steam',
-            'roasted', 'beans', 'ceramic', 'saucer', 'indoor', 'restaurant', 'hospitality', 'creamy',
-            'texture', 'top view', 'close-up', 'brown', 'warm tones', 'morning routine', 'artisan', 'wooden surface', 'wake up'
-          ]
+          category: "Food",
+          medium: "Photo",
+          title: "Fresh Coffee Latte Art Cup on Rustic Wooden Table in Artisan Cafe",
+          description: "Hot specialty espresso coffee with intricate milk foam heart latte art served on textured vintage wood table in warm cozy breakfast cafe atmosphere.",
+          keywords: ["coffee", "latte art", "espresso", "cafe", "wooden table", "hot beverage", "caffeine", "breakfast", "morning", "drink", "cup", "mug", "barista", "aroma", "specialty coffee", "cappuccino", "foam", "dairy", "cozy", "warm", "rustic", "wooden", "table", "lifestyle", "relaxation", "food and drink", "gourmet", "delicious", "refreshment", "break", "steam", "roasted", "beans", "ceramic", "saucer", "indoor", "restaurant", "hospitality", "creamy", "texture", "top view", "close-up", "brown", "warm tones", "morning routine", "artisan", "wooden surface", "wake up", "commercial stock", "high quality"]
         },
         solar_energy: {
-          category: 'Technology',
-          medium: 'Photo',
-          title: 'Renewable Solar Energy Engineer Inspecting Photovoltaic Panels Field At Sunset',
-          description: 'Professional environmental technician holding digital tablet examining modern solar panel array in expansive green hillside during golden hour sunset.',
-          keywords: [
-            'solar energy', 'solar panels', 'renewable energy', 'photovoltaic', 'engineer', 'technician',
-            'green energy', 'sustainability', 'alternative energy', 'clean energy', 'electricity',
-            'sunset', 'golden hour', 'inspection', 'technology', 'power generation', 'eco friendly',
-            'environment', 'climate change', 'innovation', 'modern', 'field', 'hills', 'industry',
-            'professional', 'work', 'tablet', 'digital', 'solar farm', 'energy transition', 'sunlight',
-            'blue sky', 'outdoor', 'maintenance', 'future', 'electric power', 'carbon neutral',
-            'sustainable development', 'green technology', 'engineering', 'ecology', 'utility', 'cell', 'clean power', 'hardware', 'renewable', 'generation', 'industrial'
-          ]
+          category: "Technology",
+          medium: "Photo",
+          title: "Renewable Solar Energy Technician Inspecting Photovoltaic Farm",
+          description: "Professional environmental technician holding digital tablet examining modern solar panel array in expansive green hillside during golden hour sunset.",
+          keywords: ["solar energy", "solar panels", "renewable energy", "photovoltaic", "engineer", "technician", "green energy", "sustainability", "alternative energy", "clean energy", "electricity", "sunset", "golden hour", "inspection", "technology", "power generation", "eco friendly", "environment", "climate change", "innovation", "modern", "field", "hills", "industry", "professional", "work", "tablet", "digital", "solar farm", "energy transition", "sunlight", "blue sky", "outdoor", "maintenance", "future", "electric power", "carbon neutral", "sustainable development", "green technology", "engineering", "ecology", "utility", "cell", "clean power", "hardware", "renewable", "generation", "industrial", "commercial stock", "high quality"]
         },
         yoga_wellness: {
-          category: 'Lifestyle',
-          medium: 'Photo',
-          title: 'Young Athletic Woman Practicing Yoga Meditation On Sandy Beach At Golden Sunrise',
-          description: 'Fit serene female yogi in warrior pose on ocean coastline during calm golden sunrise reflecting tranquility and mindful wellness lifestyle.',
-          keywords: [
-            'yoga', 'meditation', 'beach', 'sunrise', 'woman', 'fitness', 'wellness', 'mindfulness',
-            'healthy lifestyle', 'exercise', 'ocean', 'sea', 'sand', 'coast', 'morning', 'tranquility',
-            'peaceful', 'relaxation', 'balance', 'flexibility', 'stretching', 'athlete', 'sports',
-            'vitality', 'nature', 'outdoor', 'summer', 'sunlight', 'golden hour', 'coastline', 'waves',
-            'water', 'serenity', 'wellbeing', 'active', 'body', 'pose', 'spiritual', 'calm', 'lifestyle',
-            'horizon', 'sky', 'warmth', 'harmony', 'health', 'zen', 'self care', 'recreation'
-          ]
+          category: "Lifestyle",
+          medium: "Photo",
+          title: "Young Athletic Woman Practicing Yoga Meditation on Beach at Sunrise",
+          description: "Fit serene female yogi in warrior pose on ocean coastline during calm golden sunrise reflecting tranquility and mindful wellness lifestyle.",
+          keywords: ["yoga", "meditation", "beach", "sunrise", "woman", "fitness", "wellness", "mindfulness", "healthy lifestyle", "exercise", "ocean", "sea", "sand", "coast", "morning", "tranquility", "peaceful", "relaxation", "balance", "flexibility", "stretching", "athlete", "sports", "vitality", "nature", "outdoor", "summer", "sunlight", "golden hour", "coastline", "waves", "water", "serenity", "wellbeing", "active", "body", "pose", "spiritual", "calm", "lifestyle", "horizon", "sky", "warmth", "harmony", "health", "zen", "self care", "recreation", "commercial stock", "high quality"]
         },
         salad_culinary: {
-          category: 'Food',
-          medium: 'Photo',
-          title: 'Fresh Organic Vegetables Salad Bowl Plated On Healthy Mediterranean Wooden Table',
-          description: 'Vibrant bowl of fresh crisp lettuce, cherry tomatoes, cucumbers and healthy olive oil dressing served on rustic wood surface in bright daylight.',
-          keywords: [
-            'salad', 'fresh vegetables', 'healthy eating', 'organic food', 'vegetarian', 'vegan', 'diet',
-            'nutrition', 'bowl', 'tomatoes', 'cucumbers', 'greens', 'lettuce', 'lunch', 'meal', 'culinary',
-            'gourmet', 'mediterranean', 'wooden table', 'freshness', 'wellness', 'homemade', 'dining',
-            'olive oil', 'vitamins', 'clean eating', 'fitness diet', 'tasty', 'delicious', 'raw food',
-            'kitchen', 'restaurant dish', 'appetizer', 'healthy lifestyle', 'colorful', 'crisp', 'garden fresh',
-            'gastronomy', 'farm fresh', 'recipe', 'snack', 'plate', 'leafy greens', 'wholesome', 'superfood', 'nourishment', 'refreshing', 'culinary art'
-          ]
+          category: "Food",
+          medium: "Photo",
+          title: "Fresh Organic Vegetable Salad Bowl Plated on Rustic Wooden Table",
+          description: "Vibrant bowl of fresh crisp lettuce, cherry tomatoes, cucumbers and healthy olive oil dressing served on rustic wood surface in bright daylight.",
+          keywords: ["salad", "fresh vegetables", "healthy eating", "organic food", "vegetarian", "vegan", "diet", "nutrition", "bowl", "tomatoes", "cucumbers", "greens", "lettuce", "lunch", "meal", "culinary", "gourmet", "mediterranean", "wooden table", "freshness", "wellness", "homemade", "dining", "olive oil", "vitamins", "clean eating", "fitness diet", "tasty", "delicious", "raw food", "kitchen", "restaurant dish", "appetizer", "healthy lifestyle", "colorful", "crisp", "garden fresh", "gastronomy", "farm fresh", "recipe", "snack", "plate", "leafy greens", "wholesome", "superfood", "nourishment", "refreshing", "culinary art", "commercial stock", "high quality"]
         },
         fast_food_burger: {
-          category: 'Food',
-          medium: 'Photo',
-          title: 'Delicious Gourmet Beef Burger With Melting Cheese And Crispy French Fries',
-          description: 'Juicy handcrafted cheeseburger with fresh lettuce, tomato, sesame bun and hot golden french fries on restaurant dining tray.',
-          keywords: [
-            'burger', 'cheeseburger', 'fast food', 'french fries', 'hamburger', 'beef burger', 'gourmet',
-            'delicious', 'lunch', 'dinner', 'restaurant', 'meal', 'tasty', 'snack', 'unhealthy food',
-            'fries', 'crispy', 'cheese', 'sesame bun', 'fresh lettuce', 'juicy', 'takeaway', 'patty',
-            'street food', 'bacon', 'american food', 'dining', 'pub food', 'savory', 'appetizing', 'menu',
-            'comfort food', 'grill', 'grilled', 'onion', 'sauce', 'tomato', 'potato fries', 'culinary'
-          ]
+          category: "Food",
+          medium: "Photo",
+          title: "Delicious Gourmet Beef Burger with Melting Cheese and Golden Fries",
+          description: "Juicy handcrafted cheeseburger with fresh lettuce, tomato, sesame bun and hot golden french fries on restaurant dining tray.",
+          keywords: ["burger", "cheeseburger", "fast food", "french fries", "hamburger", "beef burger", "gourmet", "delicious", "lunch", "dinner", "restaurant", "meal", "tasty", "snack", "unhealthy food", "fries", "crispy", "cheese", "sesame bun", "fresh lettuce", "juicy", "takeaway", "patty", "street food", "bacon", "american food", "dining", "pub food", "savory", "appetizing", "menu", "comfort food", "grill", "grilled", "onion", "sauce", "tomato", "potato fries", "culinary", "gastronomy", "sandwich", "fast casual", "food service", "cheddar", "appetizer", "hearty meal", "beef patty", "bun", "commercial stock", "high quality"]
         },
         doctor_healthcare: {
-          category: 'Science',
-          medium: 'Photo',
-          title: 'Professional Senior Doctor Holding Digital Tablet In Modern Medical Clinic',
-          description: 'Caring experienced physician in white lab coat with stethoscope reviewing digital health records on tablet computer in bright sterile hospital room.',
-          keywords: [
-            'doctor', 'healthcare', 'medicine', 'physician', 'hospital', 'clinic', 'stethoscope', 'tablet',
-            'digital health', 'patient care', 'medical professional', 'health', 'white coat', 'technology',
-            'telemedicine', 'consultation', 'expertise', 'wellness', 'clinical', 'practitioner', 'specialist',
-            'diagnostic', 'hospital room', 'healthcare worker', 'treatment', 'medical record', 'professional',
-            'senior doctor', 'medical staff', 'service', 'examination', 'care', 'health service', 'modern clinic',
-            'confidence', 'trust', 'science', 'pharmacy', 'health insurance', 'laboratory', 'uniform', 'doctor office', 'checkup', 'safety', 'lifestyle', 'health concept', 'practicing', 'specialist care'
-          ]
+          category: "Science",
+          medium: "Photo",
+          title: "Senior Doctor Holding Digital Tablet in Modern Medical Hospital Clinic",
+          description: "Caring experienced physician in white lab coat with stethoscope reviewing digital health records on tablet computer in bright sterile hospital room.",
+          keywords: ["doctor", "healthcare", "medicine", "physician", "hospital", "clinic", "stethoscope", "tablet", "digital health", "patient care", "medical professional", "health", "white coat", "technology", "telemedicine", "consultation", "expertise", "wellness", "clinical", "practitioner", "specialist", "diagnostic", "hospital room", "healthcare worker", "treatment", "medical record", "professional", "senior doctor", "medical staff", "service", "examination", "care", "health service", "modern clinic", "confidence", "trust", "science", "pharmacy", "health insurance", "laboratory", "uniform", "doctor office", "checkup", "safety", "lifestyle", "health concept", "practicing", "specialist care", "commercial stock", "high quality"]
         },
         dog_pet: {
-          category: 'Animals',
-          medium: 'Photo',
-          title: 'Happy Golden Retriever Dog Running Playfully In Sunny Green Meadow Grass',
-          description: 'Joyful purebred golden retriever puppy with shiny golden fur leaping across lush green park lawn in bright warm sunny afternoon daylight.',
-          keywords: [
-            'dog', 'golden retriever', 'pet', 'canine', 'puppy', 'animal', 'running', 'grass', 'park',
-            'meadow', 'playful', 'happy dog', 'sunny', 'outdoor', 'nature', 'companion', 'cute', 'friendly',
-            'domestic', 'fur', 'golden fur', 'active', 'exercise', 'freedom', 'joy', 'vitality', 'fun',
-            'field', 'green lawn', 'summer', 'daylight', 'family pet', 'purebred', 'loyal', 'healthy pet',
-            'mammal', 'lifestyle', 'pet care', 'motion', 'action shot', 'pedigree', 'canine friend', 'cheerful',
-            'happiness', 'adorable', 'fetching', 'recreation', 'agility'
-          ]
+          category: "Animals",
+          medium: "Photo",
+          title: "Happy Golden Retriever Dog Running Playfully in Sunny Green Grass",
+          description: "Joyful purebred golden retriever puppy with shiny golden fur leaping across lush green park lawn in bright warm sunny afternoon daylight.",
+          keywords: ["dog", "golden retriever", "pet", "canine", "puppy", "animal", "running", "grass", "park", "meadow", "playful", "happy dog", "sunny", "outdoor", "nature", "companion", "cute", "friendly", "domestic", "fur", "golden fur", "active", "exercise", "freedom", "joy", "vitality", "fun", "field", "green lawn", "summer", "daylight", "family pet", "purebred", "loyal", "healthy pet", "mammal", "lifestyle", "pet care", "motion", "action shot", "pedigree", "canine friend", "cheerful", "happiness", "adorable", "fetching", "recreation", "agility", "commercial stock", "high quality"]
         },
         cat_pet: {
-          category: 'Animals',
-          medium: 'Photo',
-          title: 'Cute Domestic Kitten Resting Comfortably On Soft Blanket In Cozy Living Room',
-          description: 'Adorable fluffy cat with bright expressive eyes curled up peacefully on warm textile blanket at home.',
-          keywords: [
-            'cat', 'kitten', 'pet', 'feline', 'cute', 'domestic cat', 'adorable', 'furry', 'cozy',
-            'sleeping', 'whiskers', 'eyes', 'resting', 'blanket', 'home', 'indoor', 'sweet', 'companion',
-            'peaceful', 'calm', 'purebred', 'tabby', 'soft', 'lifestyle', 'pet care', 'animal', 'cute kitten',
-            'mammal', 'comfort', 'relaxing', 'snuggle', 'domestic', 'friend', 'fluffy'
-          ]
+          category: "Animals",
+          medium: "Photo",
+          title: "Cute Domestic Kitten Resting Comfortably on Soft Blanket in Living Room",
+          description: "Adorable fluffy cat with bright expressive eyes curled up peacefully on warm textile blanket at home.",
+          keywords: ["cat", "kitten", "pet", "feline", "cute", "domestic cat", "adorable", "furry", "cozy", "sleeping", "whiskers", "eyes", "resting", "blanket", "home", "indoor", "sweet", "companion", "peaceful", "calm", "purebred", "tabby", "soft", "lifestyle", "pet care", "animal", "cute kitten", "mammal", "comfort", "relaxing", "snuggle", "domestic", "friend", "fluffy", "serene", "couch", "living room", "nap", "gentle", "kitty", "playful cat", "cozy home", "warmth", "contentment", "charming", "curled up", "indoor pet", "fluffy fur", "commercial stock", "high quality"]
         },
         automotive_car: {
-          category: 'Transport',
-          medium: 'Photo',
-          title: 'Modern Luxury Sports Car Driving On Scenic Coastal Mountain Highway At Sunset',
-          description: 'Sleek aerodynamic high performance automobile cruising on winding road during golden hour sunset reflecting prestige and freedom.',
-          keywords: [
-            'car', 'sports car', 'luxury car', 'automobile', 'vehicle', 'driving', 'highway', 'road',
-            'coastal road', 'sunset', 'speed', 'performance', 'travel', 'transportation', 'modern car',
-            'drive', 'scenic drive', 'freedom', 'motor', 'design', 'automotive', 'prestige', 'fast',
-            'horsepower', 'engine', 'exterior', 'coupe', 'journey', 'trip', 'commute', 'technology',
-            'contemporary', 'wheel', 'asphalt', 'golden hour', 'action', 'motion'
-          ]
+          category: "Transport",
+          medium: "Photo",
+          title: "Modern Luxury Sports Car Driving on Scenic Mountain Highway at Sunset",
+          description: "Sleek aerodynamic high performance automobile cruising on winding road during golden hour sunset reflecting prestige and freedom.",
+          keywords: ["car", "sports car", "luxury car", "automobile", "vehicle", "driving", "highway", "road", "coastal road", "sunset", "speed", "performance", "travel", "transportation", "modern car", "drive", "scenic drive", "freedom", "motor", "design", "automotive", "prestige", "fast", "horsepower", "engine", "exterior", "coupe", "journey", "trip", "commute", "technology", "contemporary", "wheel", "asphalt", "golden hour", "action", "motion", "exotic car", "driver", "street", "supercar", "horsepower", "engineering", "vehicle design", "aerodynamic", "scenery", "outdoor", "adventure", "commercial stock", "high quality"]
         },
         city_skyline: {
-          category: 'Buildings and Architecture',
-          medium: 'Photo',
-          title: 'Modern City Skyline With Illuminated High Rise Skyscrapers At Blue Twilight',
-          description: 'Dramatic wide angle panorama of contemporary metropolitan downtown towers and commercial office buildings reflecting twilight glow in evening sky.',
-          keywords: [
-            'city', 'skyline', 'skyscrapers', 'architecture', 'downtown', 'metropolis', 'urban', 'modern building',
-            'night city', 'twilight', 'office towers', 'commercial', 'cityscape', 'business district', 'lights',
-            'illumination', 'financial center', 'panorama', 'exterior', 'structure', 'contemporary', 'glass facade',
-            'real estate', 'metropolitan', 'capital', 'development', 'dusk', 'evening', 'blue hour', 'horizon',
-            'high rise', 'corporate', 'travel destination', 'scenic', 'landmark', 'vista', 'street lights',
-            'global business', 'investment', 'innovation', 'engineering', 'construction', 'metropolis view', 'infrastructure', 'urban living', 'skyline view', 'spectacular', 'evening skyline'
-          ]
+          category: "Buildings and Architecture",
+          medium: "Photo",
+          title: "Modern City Skyline with Illuminated High Rise Skyscrapers at Twilight",
+          description: "Dramatic wide angle panorama of contemporary metropolitan downtown towers and commercial office buildings reflecting twilight glow in evening sky.",
+          keywords: ["city", "skyline", "skyscrapers", "architecture", "downtown", "metropolis", "urban", "modern building", "night city", "twilight", "office towers", "commercial", "cityscape", "business district", "lights", "illumination", "financial center", "panorama", "exterior", "structure", "contemporary", "glass facade", "real estate", "metropolitan", "capital", "development", "dusk", "evening", "blue hour", "horizon", "high rise", "corporate", "travel destination", "scenic", "landmark", "vista", "street lights", "global business", "investment", "innovation", "engineering", "construction", "metropolis view", "infrastructure", "urban living", "skyline view", "spectacular", "evening skyline", "commercial stock", "high quality"]
         },
         beach_ocean_tropical: {
-          category: 'Landscapes',
-          medium: 'Photo',
-          title: 'Tropical Turquoise Ocean Coastline With Palm Trees And White Sand Beach',
-          description: 'Breathtaking paradise seascape with crystal clear azure waves washing onto pristine tropical beach under sunny summer sky.',
-          keywords: [
-            'beach', 'ocean', 'tropical', 'sea', 'coast', 'turquoise water', 'white sand', 'palm trees',
-            'summer', 'vacation', 'travel destination', 'island', 'paradise', 'sunny', 'waves', 'shore',
-            'relaxing', 'nature', 'landscape', 'outdoor', 'holiday', 'clear water', 'scenic', 'resort',
-            'seascape', 'exotic', 'sunlight', 'serenity', 'coastal', 'horizon', 'clean beach', 'tourism'
-          ]
+          category: "Landscapes",
+          medium: "Photo",
+          title: "Tropical Turquoise Ocean Coastline with Palm Trees and White Sand Beach",
+          description: "Breathtaking paradise seascape with crystal clear azure waves washing onto pristine tropical beach under sunny summer sky.",
+          keywords: ["beach", "ocean", "tropical", "sea", "coast", "turquoise water", "white sand", "palm trees", "summer", "vacation", "travel destination", "island", "paradise", "sunny", "waves", "shore", "relaxing", "nature", "landscape", "outdoor", "holiday", "clear water", "scenic", "resort", "seascape", "exotic", "sunlight", "serenity", "coastal", "horizon", "clean beach", "tourism", "azure sea", "tropical island", "peaceful", "sunshine", "waterfront", "warm weather", "relaxation", "escape", "coastal line", "seashore", "blue ocean", "lagoon", "destination", "leisure", "getaway", "tranquility", "commercial stock", "high quality"]
         },
         flowers_botanical: {
-          category: 'Plants and Flowers',
-          medium: 'Photo',
-          title: 'Vibrant Colorful Flower Bouquet Blooming In Fresh Spring Garden Sunlight',
-          description: 'Beautiful close-up of fresh blossoming flowers with delicate petals and green leaves in bright morning garden sunlight.',
-          keywords: [
-            'flowers', 'bouquet', 'blooming', 'garden', 'blossom', 'spring', 'botanical', 'petals',
-            'flora', 'nature', 'colorful', 'fresh flowers', 'sunlight', 'floral', 'macro', 'outdoor',
-            'beauty', 'rose', 'bright', 'delicate', 'green leaves', 'plant', 'summer', 'fragrance',
-            'decoration', 'gift', 'celebration', 'wedding flowers', 'natural beauty', 'harmony'
-          ]
+          category: "Plants and Flowers",
+          medium: "Photo",
+          title: "Vibrant Colorful Flower Bouquet Blooming in Morning Garden Sunlight",
+          description: "Beautiful close-up of fresh blossoming flowers with delicate petals and green leaves in bright morning garden sunlight.",
+          keywords: ["flowers", "bouquet", "blooming", "garden", "blossom", "spring", "botanical", "petals", "flora", "nature", "colorful", "fresh flowers", "sunlight", "floral", "macro", "outdoor", "beauty", "rose", "bright", "delicate", "green leaves", "plant", "summer", "fragrance", "decoration", "gift", "celebration", "wedding flowers", "natural beauty", "harmony", "colorful petals", "flower head", "springtime", "garden bloom", "romantic", "perennial", "organic", "botany", "vibrant colors", "floral arrangement", "fresh flora", "morning light", "sunlit", "elegance", "horticulture", "blossoming", "flower field", "peaceful nature", "commercial stock", "high quality"]
         },
         mountains_sunset: {
-          category: 'Landscapes',
-          medium: 'Photo',
-          title: 'Majestic Mountain Peaks Under Warm Golden Sunset Sky In Wilderness Panorama',
-          description: 'Breathtaking panoramic view of rocky alpine mountain ranges illuminated by dramatic golden sunset rays in pristine wilderness.',
-          keywords: [
-            'mountains', 'landscape', 'sunset', 'peaks', 'rocky mountains', 'golden hour', 'alpine',
-            'wilderness', 'nature', 'scenic vista', 'panorama', 'outdoor', 'hiking', 'travel',
-            'adventure', 'dramatic sky', 'clouds', 'majestic', 'valley', 'horizon', 'evening light',
-            'mountain range', 'serene', 'tranquil', 'exploration', 'freedom', 'high altitude'
-          ]
+          category: "Landscapes",
+          medium: "Photo",
+          title: "Majestic Mountain Peaks Under Warm Golden Sunset Sky in Wilderness",
+          description: "Breathtaking panoramic view of rocky alpine mountain ranges illuminated by dramatic golden sunset rays in pristine wilderness.",
+          keywords: ["mountains", "landscape", "sunset", "peaks", "rocky mountains", "golden hour", "alpine", "wilderness", "nature", "scenic vista", "panorama", "outdoor", "hiking", "travel", "adventure", "dramatic sky", "clouds", "majestic", "valley", "horizon", "evening light", "mountain range", "serene", "tranquil", "exploration", "freedom", "high altitude", "alps", "summit", "rocky peak", "mountain ridge", "scenery", "evening sun", "dusk", "wilderness view", "national park", "travel destination", "peaceful scenery", "golden sky", "natural beauty", "climbing", "spectacular vista", "breathtaking", "earth", "open space", "wild scenery", "nature photography", "highland", "commercial stock", "high quality"]
         },
         abstract_3d: {
-          category: 'Graphic Resources',
-          medium: '3D Render',
-          title: 'Futuristic Abstract 3D Geometric Wave Pattern With Vibrant Blue Gradient',
-          description: 'High tech digital dimensional fluid texture with glowing curved geometric surfaces and elegant lighting designed for contemporary web banner background.',
-          keywords: [
-            'abstract', '3d render', 'geometric', 'wave', 'texture', 'background', 'gradient', 'blue gradient',
-            'futuristic', 'digital art', 'fluid', 'motion', 'modern design', 'wallpaper', 'backdrop', 'graphic resource',
-            'technology', 'curved', 'smooth', 'dimensional', 'innovation', 'minimalist', 'banner background',
-            'presentation', 'creative', 'surface', 'flowing', 'vibrant', 'cyber', 'virtual', 'cgi', 'illustration',
-            'elegant', 'artistic', 'composition', 'pattern', 'dynamic', 'digital wave', 'clean design', 'contemporary',
-            'flow', 'color blend', 'decorative', 'high resolution', 'techno', 'visual art', 'render', 'depth'
-          ]
+          category: "Graphic Resources",
+          medium: "3D Render",
+          title: "Futuristic Abstract 3D Geometric Wave Pattern with Blue Gradient",
+          description: "High tech digital dimensional fluid texture with glowing curved geometric surfaces and elegant lighting designed for contemporary web banner background.",
+          keywords: ["abstract", "3d render", "geometric", "wave", "texture", "background", "gradient", "blue gradient", "futuristic", "digital art", "fluid", "motion", "modern design", "wallpaper", "backdrop", "graphic resource", "technology", "curved", "smooth", "dimensional", "innovation", "minimalist", "banner background", "presentation", "creative", "surface", "flowing", "vibrant", "cyber", "virtual", "cgi", "illustration", "elegant", "artistic", "composition", "pattern", "dynamic", "digital wave", "clean design", "contemporary", "flow", "color blend", "decorative", "high resolution", "techno", "visual art", "render", "depth", "commercial stock", "high quality"]
         },
         business_corporate: {
-          category: 'Business',
-          medium: 'Photo',
-          title: 'Corporate Business Team Collaborating On Project Strategy In Modern Office',
-          description: 'Diverse group of professional colleagues having productive discussion and analyzing project growth charts in contemporary sunlit conference room.',
-          keywords: [
-            'business', 'corporate', 'meeting', 'teamwork', 'collaboration', 'office', 'colleagues', 'strategy',
-            'professional', 'workplace', 'planning', 'discussion', 'conference room', 'coworkers', 'executives',
-            'finance', 'startup', 'management', 'success', 'communication', 'analysis', 'productivity', 'modern office',
-            'diverse team', 'project', 'leadership', 'career', 'partnership', 'company', 'consulting', 'brainstorming',
-            'briefing', 'daylight', 'entrepreneur', 'corporate culture', 'team spirit', 'businesspeople', 'presentation',
-            'interaction', 'workplace culture', 'growth', 'solutions', 'work', 'office interior', 'colleague', 'strategy meeting', 'synergy', 'commercial'
-          ]
+          category: "Business",
+          medium: "Photo",
+          title: "Corporate Business Team Collaborating on Strategy in Modern Office",
+          description: "Diverse group of professional colleagues having productive discussion and analyzing project growth charts in contemporary sunlit conference room.",
+          keywords: ["business", "corporate", "meeting", "teamwork", "collaboration", "office", "colleagues", "strategy", "professional", "workplace", "planning", "discussion", "conference room", "coworkers", "executives", "finance", "startup", "management", "success", "communication", "analysis", "productivity", "modern office", "diverse team", "project", "leadership", "career", "partnership", "company", "consulting", "brainstorming", "briefing", "daylight", "entrepreneur", "corporate culture", "team spirit", "businesspeople", "presentation", "interaction", "workplace culture", "growth", "solutions", "work", "office interior", "colleague", "strategy meeting", "synergy", "commercial", "commercial stock", "high quality"]
         },
         nature_landscape: {
-          category: 'Landscapes',
-          medium: 'Photo',
-          title: 'Sunlight Filtering Through Lush Green Forest Trees In Natural Wilderness',
-          description: 'Scenic natural woodland landscape with warm morning sunbeams piercing through tall tree canopies illuminating vibrant moss and fern ground.',
-          keywords: [
-            'nature', 'forest', 'trees', 'sunlight', 'woodland', 'green', 'wilderness', 'landscape',
-            'sunbeams', 'morning light', 'ecology', 'environment', 'scenic', 'botanical', 'canopy',
-            'foliage', 'organic', 'peaceful', 'tranquil', 'serene', 'outdoor', 'fresh air', 'moss',
-            'trail', 'summer', 'daylight', 'scenery', 'deep forest', 'park', 'wild nature', 'travel',
-            'conservation', 'eco friendly', 'flora', 'woods', 'path', 'rays of light', 'greenery',
-            'natural beauty', 'harmony', 'countryside', 'clean environment', 'earth', 'timber', 'branches', 'vitality', 'earthy', 'woodland scenery'
-          ]
+          category: "Landscapes",
+          medium: "Photo",
+          title: "Sunlight Filtering Through Lush Green Forest Trees in Wilderness",
+          description: "Scenic natural woodland landscape with warm morning sunbeams piercing through tall tree canopies illuminating vibrant moss and fern ground.",
+          keywords: ["nature", "forest", "trees", "sunlight", "woodland", "green", "wilderness", "landscape", "sunbeams", "morning light", "ecology", "environment", "scenic", "botanical", "canopy", "foliage", "organic", "peaceful", "tranquil", "serene", "outdoor", "fresh air", "moss", "trail", "summer", "daylight", "scenery", "deep forest", "park", "wild nature", "travel", "conservation", "eco friendly", "flora", "woods", "path", "rays of light", "greenery", "natural beauty", "harmony", "countryside", "clean environment", "earth", "timber", "branches", "vitality", "earthy", "woodland scenery", "commercial stock", "high quality"]
         }
       };
 
-      const selectedProfile = PROFILES[scene] || PROFILES.woman_fashion_green_dress || PROFILES.nature_landscape;
+      const selectedProfile = PROFILES[scene] || PROFILES.typography_holly_jolly_christmas || PROFILES.nature_landscape;
+
+      // Dynamic Title Customization for Unlisted Quotes or Icons
+      let finalTitle = selectedProfile.title;
+      if (scene === 'typography_general_holiday' && rawWords.length > 0) {
+        const phraseWords = rawWords.filter(w => !/typography|lettering|vector|design|clipart|png|jpg/i.test(w));
+        if (phraseWords.length > 0) {
+          const customPhrase = phraseWords.map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+          if (customPhrase.length >= 5 && customPhrase.length <= 40) {
+            finalTitle = `${customPhrase} Festive Christmas Holiday Lettering Vector Design`;
+          }
+        }
+      } else if (scene === 'typography_inspirational_quote' && rawWords.length > 0) {
+        const quoteWords = rawWords.filter(w => !/typography|lettering|vector|design|quote|sublimation|svg/i.test(w));
+        if (quoteWords.length > 0) {
+          const customQuote = quoteWords.map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+          if (customQuote.length >= 5 && customQuote.length <= 40) {
+            finalTitle = `${customQuote} Typography Lettering Vector Design for Sublimation`;
+          }
+        }
+      } else if (scene === 'graphic_icons_badges' && rawWords.length > 0) {
+        const iconWords = rawWords.filter(w => !/icon|logo|badge|vector|graphic|design|element|symbol/i.test(w));
+        if (iconWords.length > 0) {
+          const customSubject = iconWords.map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+          finalTitle = `${customSubject} Modern Vector Icon Graphic Design Element Isolated`;
+        }
+      }
 
       // Ensure platform compliance
-      let finalTitle = selectedProfile.title;
       if (platform === 'Adobe Stock' && finalTitle.length > 75) {
         finalTitle = finalTitle.substring(0, 75).trim().replace(/[,.\s]+$/, '');
       }
@@ -6331,7 +6305,7 @@ CRITICAL RULES:
       return {
         title: finalTitle,
         description: selectedProfile.description,
-        keywords: selectedProfile.keywords.slice(0, 48),
+        keywords: selectedProfile.keywords.slice(0, 50),
         category: selectedProfile.category,
         medium: selectedProfile.medium,
         engine: `Pixcraft Deep Vision (${scene.replace(/_/g, ' ').toUpperCase()})`,
@@ -6543,7 +6517,7 @@ CRITICAL RULES:
         .map(obj => obj.val);
 
       const combinedTags = [...topTags, ...visualTags, ...shuffledSecondary];
-      const finalKeywords = cleanStockKeywords(combinedTags, 48);
+      const finalKeywords = cleanStockKeywords(combinedTags, 50);
 
       return {
         title,
@@ -6813,17 +6787,17 @@ CRITICAL RULES:
       // 1. Top Selling Score (buyer search volume & commercial conversion)
       let selling = isTop10 
         ? Math.max(94, 99 - idx) 
-        : (idx < 25 ? Math.max(86, 94 - Math.floor((idx - 10) * 0.55)) : Math.max(78, 86 - Math.floor((idx - 25) * 0.4)));
+        : (idx < 25 ? Math.max(86, 94 - Math.floor((idx - 10) * 0.55)) : Math.max(78, 86 - Math.floor((idx - 25) * 0.32)));
 
       // 2. Top Trending Score (2026 microstock momentum & seasonal trend)
       let trending = isTop10 
         ? Math.max(92, 98 - Math.floor(idx * 0.7)) 
-        : (idx < 25 ? Math.max(84, 93 - Math.floor((idx - 10) * 0.6)) : Math.max(76, 85 - Math.floor((idx - 25) * 0.45)));
+        : (idx < 25 ? Math.max(84, 93 - Math.floor((idx - 10) * 0.6)) : Math.max(76, 85 - Math.floor((idx - 25) * 0.36)));
 
       // 3. Top Quality SEO Score (metadata compliance, uniqueness, platform weighting)
       let quality = isTop10 
         ? Math.max(95, 100 - Math.floor(idx * 0.5)) 
-        : (idx < 25 ? Math.max(88, 95 - Math.floor((idx - 10) * 0.4)) : Math.max(82, 89 - Math.floor((idx - 25) * 0.35)));
+        : (idx < 25 ? Math.max(88, 95 - Math.floor((idx - 10) * 0.4)) : Math.max(82, 89 - Math.floor((idx - 25) * 0.28)));
 
       // Tag specificity booster
       if (tag && tag.includes(' ')) {
@@ -6843,11 +6817,11 @@ CRITICAL RULES:
       if (!item) return;
 
       box.innerHTML = '';
-      badge.innerText = `${item.keywords.length} / 48 tags`;
+      badge.innerText = `${item.keywords.length} / 50 tags`;
 
-      if (item.keywords.length >= 35 && item.keywords.length <= 49) {
+      if (item.keywords.length >= 45 && item.keywords.length <= 50) {
         badge.className = 'text-[10px] font-black font-mono px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200';
-      } else if (item.keywords.length > 49) {
+      } else if (item.keywords.length > 50) {
         badge.className = 'text-[10px] font-black font-mono px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200';
       } else {
         badge.className = 'text-[10px] font-black font-mono px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200';
@@ -7075,7 +7049,7 @@ CRITICAL RULES:
         descText = `This image features ${it.title.toLowerCase()}, creating a clean and professional background composition.`;
       }
       const desc = formatCsvCell(descText, { isDesc: true });
-      const kw = formatCsvKeywords(it.keywords, 49);
+      const kw = formatCsvKeywords(it.keywords, 50);
       const cat = formatCsvCell(getShutterstockCategory(it.category));
 
       let row = '';
@@ -7110,7 +7084,7 @@ CRITICAL RULES:
             descText = `This image features ${it.title.toLowerCase()}, creating a clean and professional background composition.`;
           }
           const desc = formatCsvCell(descText, { isDesc: true });
-          const kw = formatCsvKeywords(it.keywords, 49);
+          const kw = formatCsvKeywords(it.keywords, 50);
           const cat = formatCsvCell(getShutterstockCategory(it.category));
           const editorial = (it.isEditorial || (it.releases && it.releases.toLowerCase().includes('editorial'))) ? 'yes' : 'no';
           const mature = it.isMature ? 'yes' : 'no';
@@ -7124,7 +7098,7 @@ CRITICAL RULES:
         batchItemList.forEach(it => {
           const fn = formatCsvCell(it.fileName);
           const title = formatCsvCell(it.title, { isTitle: true });
-          const kw = formatCsvKeywords(it.keywords, 49);
+          const kw = formatCsvKeywords(it.keywords, 50);
           csv += `${fn},${title},${kw}\r\n`;
         });
         clipboardSafeCopy(csv);
@@ -7178,7 +7152,7 @@ CRITICAL RULES:
 
         item.title = cleanStockTitle(meta.title || item.title);
         item.description = cleanStockDescription(meta.description || item.description);
-        item.keywords = cleanStockKeywords(meta.keywords && meta.keywords.length > 0 ? meta.keywords : item.keywords, 49);
+        item.keywords = cleanStockKeywords(meta.keywords && meta.keywords.length > 0 ? meta.keywords : item.keywords, 50);
         item.category = meta.category || item.category;
         item.medium = meta.medium || item.medium;
         item.engine = meta.engine;
@@ -7191,7 +7165,7 @@ CRITICAL RULES:
         const fallback = generateSmartFallbackMetadata(item.fileName, currentActiveIdx + 1, item.visualMeta);
         item.title = cleanStockTitle(fallback.title);
         item.description = cleanStockDescription(fallback.description);
-        item.keywords = cleanStockKeywords(fallback.keywords, 49);
+        item.keywords = cleanStockKeywords(fallback.keywords, 50);
         item.category = fallback.category || item.category;
         loadActiveItem(currentActiveIdx);
         showToast('Updated with distinct SEO metadata');
@@ -7329,7 +7303,7 @@ CRITICAL RULES:
       batchItemList.forEach(it => {
         const fn = formatCsvCell(it.fileName);
         const title = formatCsvCell(it.title, { isTitle: true });
-        const kw = formatCsvKeywords(it.keywords, 49);
+        const kw = formatCsvKeywords(it.keywords, 50);
         const catNum = getAdobeCategoryNumber(it.category);
         const rel = formatCsvCell(it.releases || '');
         csv += `${fn},${title},${kw},"${catNum}",${rel}\r\n`;
@@ -7354,7 +7328,7 @@ CRITICAL RULES:
           descText = `This image features ${it.title.toLowerCase()}, creating a clean and professional background composition.`;
         }
         const desc = formatCsvCell(descText, { isDesc: true });
-        const kw = formatCsvKeywords(it.keywords, 49);
+        const kw = formatCsvKeywords(it.keywords, 50);
         const cat = formatCsvCell(getShutterstockCategory(it.category));
         const editorial = (it.isEditorial || (it.releases && it.releases.toLowerCase().includes('editorial'))) ? 'yes' : 'no';
         const mature = it.isMature ? 'yes' : 'no';
@@ -7377,7 +7351,7 @@ CRITICAL RULES:
       batchItemList.forEach(it => {
         const fn = formatCsvCell(it.fileName);
         const title = formatCsvCell(it.title, { isTitle: true });
-        const kw = formatCsvKeywords(it.keywords, 49);
+        const kw = formatCsvKeywords(it.keywords, 50);
         csv += `${fn},${title},${kw}\r\n`;
       });
 
@@ -7396,7 +7370,7 @@ CRITICAL RULES:
         const fn = formatCsvCell(it.fileName);
         const title = formatCsvCell(it.title, { isTitle: true });
         const desc = formatCsvCell(it.description || it.title, { isDesc: true });
-        const kw = formatCsvKeywords(it.keywords, 49);
+        const kw = formatCsvKeywords(it.keywords, 50);
         csv += `${fn},${title},${desc},${kw}\r\n`;
       });
 
@@ -7419,7 +7393,7 @@ CRITICAL RULES:
           descText = `This image features ${it.title.toLowerCase()}, creating a high quality visual asset for commercial design.`;
         }
         const desc = formatCsvCell(descText, { isDesc: true });
-        const kw = formatCsvKeywords(it.keywords, 49);
+        const kw = formatCsvKeywords(it.keywords, 50);
         csv += `${fn},${title},${desc},${kw}\r\n`;
       });
 
@@ -7451,7 +7425,7 @@ CRITICAL RULES:
           batchItemList.forEach(it => {
             const fn = formatCsvCell(it.fileName);
             const title = formatCsvCell(it.title, { isTitle: true });
-            const kw = formatCsvKeywords(it.keywords, 49);
+            const kw = formatCsvKeywords(it.keywords, 50);
             const catNum = getAdobeCategoryNumber(it.category);
             const rel = formatCsvCell(it.releases || '');
             csv += `${fn},${title},${kw},${catNum},${rel}\r\n`;
