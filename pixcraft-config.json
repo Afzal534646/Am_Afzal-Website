@@ -1,0 +1,5 @@
+{
+  "firebaseUrl": "",
+  "firebaseAuth": "",
+  "note": "Optional: set your Firebase Realtime Database URL here for cross-browser synchronization."
+}
