@@ -4279,6 +4279,7 @@
         medium: 'Photo',
         releases: '',
         platform: activePlatform,
+              seoTargetPercent: (window.selectedSeoPercent || 100),
         status: 'completed'
       };
       batchItemList.push(item);
@@ -5156,6 +5157,7 @@ Provide direct, structured, and helpful responses. If the user asks in Bengali, 
           medium: 'Photo',
           releases: '',
           platform: activePlatform,
+              seoTargetPercent: (window.selectedSeoPercent || 100),
           status: 'pending'
         });
       }
@@ -5198,6 +5200,7 @@ Provide direct, structured, and helpful responses. If the user asks in Bengali, 
               mime: mimeType,
               fileName: item.fileName,
               platform: activePlatform,
+              seoTargetPercent: (window.selectedSeoPercent || 100),
               criteriaNotice: (PLATFORM_CRITERIA[activePlatform] || {}).notice,
               geminiKey: userApiKey,
               geminiModel: selectedModel,
@@ -6353,6 +6356,7 @@ CRITICAL RULES:
           mime: mimeType,
           fileName: item.fileName,
           platform: activePlatform,
+              seoTargetPercent: (window.selectedSeoPercent || 100),
           criteriaNotice: (PLATFORM_CRITERIA[activePlatform] || {}).notice,
           geminiKey: userApiKey,
           geminiModel: selectedModel,
@@ -7095,6 +7099,145 @@ CRITICAL RULES:
     // Login Form Submit Handler (100% Robust Master Admin + Standard Users)
     
     // Master Admin Token & Authentication Hub
+    
+    // =========================================================================
+    // 🎯 SEO PERCENTAGE CONTROLLER ENGINE (% SEO CONTROLLER)
+    // =========================================================================
+    window.selectedSeoPercent = 100;
+
+    function setSeoTargetLevel(pct, btnElement) {
+      window.selectedSeoPercent = Number(pct);
+      const slider = document.getElementById('seoTargetRangeInput');
+      if (slider) slider.value = pct;
+      updateSeoUI(pct);
+
+      // Update preset buttons styling
+      const buttons = document.querySelectorAll('.seo-preset-btn');
+      buttons.forEach(b => {
+        b.classList.remove('active', 'bg-blue-600', 'text-white', 'border-blue-600', 'font-extrabold', 'shadow-xs');
+        b.classList.add('bg-slate-50', 'text-slate-600', 'border-slate-200', 'font-bold');
+      });
+      if (btnElement) {
+        btnElement.classList.remove('bg-slate-50', 'text-slate-600', 'border-slate-200');
+        btnElement.classList.add('active', 'bg-blue-600', 'text-white', 'border-blue-600', 'font-extrabold', 'shadow-xs');
+      }
+      showToast(`🎯 Target SEO Level set to ${pct}%!`);
+    }
+
+    function onSeoRangeChange(val) {
+      window.selectedSeoPercent = Number(val);
+      updateSeoUI(val);
+
+      // Deselect preset buttons if custom value
+      const buttons = document.querySelectorAll('.seo-preset-btn');
+      buttons.forEach(b => {
+        const text = b.textContent || '';
+        if (text.includes(`${val}%`)) {
+          b.classList.add('active', 'bg-blue-600', 'text-white', 'border-blue-600', 'font-extrabold', 'shadow-xs');
+          b.classList.remove('bg-slate-50', 'text-slate-600', 'border-slate-200');
+        } else {
+          b.classList.remove('active', 'bg-blue-600', 'text-white', 'border-blue-600', 'font-extrabold', 'shadow-xs');
+          b.classList.add('bg-slate-50', 'text-slate-600', 'border-slate-200', 'font-bold');
+        }
+      });
+    }
+
+    function updateSeoUI(pct) {
+      const p = Number(pct);
+      const badge = document.getElementById('seoPercentBadge');
+      const text = document.getElementById('seoSliderValueText');
+      const qualityBadge = document.getElementById('seoQualityBadge');
+
+      let label = `${p}% Stock SEO`;
+      let desc = `${p}% Optimization`;
+
+      if (p >= 100) {
+        label = '100% Ultra Stock SEO (Max)';
+        desc = '100% Maximum Agency Algorithm';
+      } else if (p >= 98) {
+        label = '98% Pro Agency Rank';
+        desc = '98% Pro Microstock Seller';
+      } else if (p >= 92) {
+        label = '92% High Search Rank';
+        desc = '92% High Search Visibility';
+      } else if (p >= 85) {
+        label = '85% Balanced SEO';
+        desc = '85% Balanced Commercial SEO';
+      } else {
+        label = `${p}% Standard SEO`;
+        desc = `${p}% Standard Density`;
+      }
+
+      if (badge) badge.textContent = label;
+      if (text) text.textContent = desc;
+      if (qualityBadge) {
+        qualityBadge.innerHTML = `<i data-lucide="shield-check" class="w-3.5 h-3.5"></i> SEO Score: ${p}%`;
+        if (window.lucide) lucide.createIcons();
+      }
+    }
+
+    // =========================================================================
+    // 🌐 DUAL URL DIRECT LOGIN ROUTER (ADMIN LINK & USER LINK)
+    // =========================================================================
+    function checkUrlTokenAuth() {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('token');
+        const mode = params.get('mode');
+        const userParam = params.get('user');
+
+        // 1. MASTER ADMIN TOKEN LOGIN
+        if (token && (token === 'PIXCRAFT-MASTER-AFZAL-207280' || token === MASTER_ADMIN_TOKEN || token === 'Afzal534646207280@#&*')) {
+          authenticateWithToken('PIXCRAFT-MASTER-AFZAL-207280');
+          return;
+        }
+
+        // 2. ADMIN DIRECT MODE (?mode=admin or ?admin=login)
+        if (mode === 'admin' || params.has('admin')) {
+          authenticateWithToken('PIXCRAFT-MASTER-AFZAL-207280');
+          return;
+        }
+
+        // 3. REGULAR USER / DEMO CONTRIBUTOR DIRECT MODE (?mode=user or ?user=demo)
+        if (mode === 'user' || userParam === 'demo' || params.has('user')) {
+          const users = getUsersDb();
+          let demoUser = users.find(u => u.email === 'contributor.demo@pixcraft.ai');
+          if (!demoUser) {
+            demoUser = {
+              id: 'usr_demo_contributor',
+              name: 'Demo Contributor',
+              email: 'contributor.demo@pixcraft.ai',
+              role: 'user',
+              status: 'active',
+              credits: 5000,
+              isPro: false
+            };
+            users.push(demoUser);
+            saveUsersDb(users);
+          }
+          const session = {
+            userId: demoUser.id,
+            email: demoUser.email,
+            name: demoUser.name,
+            role: 'user',
+            token: 'sess_user_demo_' + Date.now(),
+            loginAt: Date.now()
+          };
+          saveActiveSession(session);
+          showToast('👤 Logged in as Standard Contributor (5,000 Credits)!');
+          applyAuthenticatedUser(demoUser);
+          return;
+        }
+
+        // 4. GENERAL TOKEN CHECK
+        if (token) {
+          authenticateWithToken(token);
+        }
+      } catch (e) {
+        console.warn('URL token auth error:', e);
+      }
+    }
+
     const MASTER_ADMIN_TOKEN = 'PIXCRAFT-MASTER-AFZAL-207280';
 
     function prepareAdminLogin() {
