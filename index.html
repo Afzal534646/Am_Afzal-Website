@@ -2600,12 +2600,12 @@
   <!-- Main JavaScript Logic -->
   <script>
     let activePlatform = 'Adobe Stock';
-    let batchItemList = [];
+    let batchItemList = (window.batchItemList = window.batchItemList || []);
     let currentActiveIdx = -1;
     let isProcessingBatch = false;
-    let userApiKey = localStorage.getItem('pixcraft_custom_api_key') || 
+    let userApiKey = (window.userApiKey = localStorage.getItem('pixcraft_custom_api_key') || 
                   localStorage.getItem('pixcraft_lifetime_gemini_key') || 
-                  localStorage.getItem('pixcraft_global_admin_gemini_key') || "";
+                  localStorage.getItem('pixcraft_global_admin_gemini_key') || "");
     let selectedModel = localStorage.getItem('pixcraft_selected_model');
     // Gemini 3.8 Flash is Google's official recommended model for 2026.
     // Migrate away from deprecated gemini-2.5-flash or missing models
@@ -2619,7 +2619,8 @@
       localStorage.setItem('pixcraft_hub_model', activeModel);
     }
     let savedCredits = localStorage.getItem('pixcraft_credits');
-    let credits = (!savedCredits || parseInt(savedCredits) < 5000) ? 5000 : parseInt(savedCredits);
+    let credits = (window.credits !== undefined) ? Number(window.credits) : ((!savedCredits || parseInt(savedCredits) < 5000) ? 5000 : parseInt(savedCredits));
+    window.credits = credits;
     localStorage.setItem('pixcraft_credits', credits);
 
     const SPAM_WORDS = ['isolated', 'isolated on white', 'stunning', 'beautiful', '4k', '8k', 'copyspace', 'copy space', 'background', 'nobody'];
@@ -4038,25 +4039,30 @@
       }
 
       score = Math.max(35, Math.min(99, score));
-      if (scoreEl) scoreEl.innerText = score + '%';
+      if (scoreEl) {
+        scoreEl.textContent = score + '%';
+        scoreEl.innerText = score + '%';
+      }
 
       if (badgeEl) {
+        const badgeText = score >= 90 ? 'High Confidence • Approved' : score >= 75 ? 'Moderate Risk • Review Recommended' : 'High Rejection Risk • Needs Fix';
+        badgeEl.textContent = badgeText;
+        badgeEl.innerText = badgeText;
         if (score >= 90) {
-          badgeEl.innerText = 'High Confidence • Approved';
           badgeEl.className = 'text-xs font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full';
         } else if (score >= 75) {
-          badgeEl.innerText = 'Moderate Risk • Review Recommended';
           badgeEl.className = 'text-xs font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full';
         } else {
-          badgeEl.innerText = 'High Rejection Risk • Needs Fix';
           badgeEl.className = 'text-xs font-bold text-rose-700 bg-rose-100 px-2 py-0.5 rounded-full';
         }
       }
 
       if (detailEl) {
-        detailEl.innerText = score >= 90
+        const detailMsg = score >= 90
           ? 'Asset passes key 2026 Microstock compliance standards.'
           : 'Potential agency rejection risks detected. Click auto-clean to fix.';
+        detailEl.textContent = detailMsg;
+        detailEl.innerText = detailMsg;
       }
 
       if (container) {
@@ -4096,10 +4102,18 @@
         }
         item.title = cleanStockTitle(item.title);
 
-        const safeFills = ['commercial', 'stock photo', 'contemporary', 'professional', 'lifestyle', 'authentic', 'background', 'design'];
+        const safeFills = [
+          'commercial', 'stock photo', 'contemporary', 'professional', 'lifestyle', 'authentic',
+          'design', 'creative', 'modern', 'concept', 'quality', 'clean', 'activity', 'indoor',
+          'visual', 'element', 'detail', 'presentation', 'style', 'urban', 'natural', 'focus',
+          'daylight', 'scene', 'composition', 'texture', 'industry', 'artisan', 'workplace', 'atmosphere',
+          'high resolution', 'sharp focus', 'editorial style', 'commercial concept', 'artistic', 'vibrant'
+        ];
         for (const f of safeFills) {
           if (item.keywords.length >= 48) break;
-          if (!item.keywords.includes(f)) item.keywords.push(f);
+          if (!item.keywords.includes(f) && !SPAM_WORDS.includes(f.toLowerCase())) {
+            item.keywords.push(f);
+          }
         }
 
         loadActiveItem(currentActiveIdx);
@@ -4394,9 +4408,12 @@
       const compLevel = isShort ? 'High' : (words.length === 2 ? 'Moderate' : 'Low (Niche Opportunity)');
       const rating = isShort ? 'High Demand • High Competition' : 'High Conversion Potential';
 
-      document.getElementById('marketKeywordTitle').innerText = `SEO Analysis for: "${kw}"`;
-      document.getElementById('marketKeywordRating').innerText = rating;
-      document.getElementById('marketKeywordStats').innerText = `Estimated ~${baseSearches.toLocaleString()} monthly agency buyer queries • Competition: ${compLevel}`;
+      const titleEl = document.getElementById('marketKeywordTitle');
+      if (titleEl) { titleEl.textContent = `SEO Analysis for: "${kw}"`; titleEl.innerText = `SEO Analysis for: "${kw}"`; }
+      const ratingEl = document.getElementById('marketKeywordRating');
+      if (ratingEl) { ratingEl.textContent = rating; ratingEl.innerText = rating; }
+      const statsEl = document.getElementById('marketKeywordStats');
+      if (statsEl) { statsEl.textContent = `Estimated ~${baseSearches.toLocaleString()} monthly agency buyer queries • Competition: ${compLevel}`; statsEl.innerText = `Estimated ~${baseSearches.toLocaleString()} monthly agency buyer queries • Competition: ${compLevel}`; }
 
       const pairs = [
         kw,
@@ -4406,7 +4423,8 @@
         'high quality authentic',
         'contemporary editorial'
       ].join(', ');
-      document.getElementById('marketKeywordPairs').innerText = `Suggested high-ranking tag pairs: ${pairs}`;
+      const pairsEl = document.getElementById('marketKeywordPairs');
+      if (pairsEl) { pairsEl.textContent = `Suggested high-ranking tag pairs: ${pairs}`; pairsEl.innerText = `Suggested high-ranking tag pairs: ${pairs}`; }
     }
 
     function addAssetToMetadataQueue(dataUrl, name, defaultTitle, defaultTags, category = 'Lifestyle') {
@@ -5031,8 +5049,20 @@ Provide direct, structured, and helpful responses. If the user asks in Bengali, 
       showToast('Switched to Fast Built-in Mode');
     }
 
+    function initPersistentApiKey() {
+      const key = localStorage.getItem('pixcraft_custom_api_key') || 
+                  localStorage.getItem('pixcraft_lifetime_gemini_key') || 
+                  localStorage.getItem('pixcraft_global_admin_gemini_key') || "";
+      if (key) {
+        userApiKey = window.userApiKey = key;
+        const input = document.getElementById('customKeyInput');
+        if (input) input.value = key;
+      }
+      return key;
+    }
+
     function saveApiSetting() {
-      userApiKey = document.getElementById('customKeyInput').value.trim();
+      userApiKey = window.userApiKey = document.getElementById('customKeyInput').value.trim();
       selectedModel = document.getElementById('modelSelectBox').value || 'gemini-2.5-flash';
       localStorage.setItem('pixcraft_custom_api_key', userApiKey);
       localStorage.setItem('pixcraft_selected_model', selectedModel);
@@ -5680,11 +5710,12 @@ Provide direct, structured, and helpful responses. If the user asks in Bengali, 
     }
 
     function downloadCsvFile(csvContent, filename) {
+      window.lastGeneratedCsv = { content: csvContent, filename: filename };
       // UTF-8 BOM (\uFEFF) forces Microsoft Excel & spreadsheet viewers on Windows/Mac to parse as UTF-8 Unicode
       const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
       if (typeof saveAs === 'function') {
         saveAs(blob, filename);
-      } else {
+      } else if (typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function') {
         const link = document.createElement("a");
         const url = URL.createObjectURL(blob);
         link.setAttribute("href", url);
@@ -5693,7 +5724,7 @@ Provide direct, structured, and helpful responses. If the user asks in Bengali, 
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
       }
     }
 
@@ -6473,10 +6504,12 @@ CRITICAL RULES:
       // Update dedicated Title & Keywords SEO score badges
       const titleBadge = document.getElementById('titleSeoScorePercent');
       if (titleBadge) {
+        titleBadge.textContent = `${score}% Optimized`;
         titleBadge.innerText = `${score}% Optimized`;
       }
       const kwBadge = document.getElementById('keywordSeoScorePercent');
       if (kwBadge) {
+        kwBadge.textContent = `${score}% Ultra Stock SEO (${(item.keywords || []).length}/48 Tags)`;
         kwBadge.innerText = `${score}% Ultra Stock SEO (${(item.keywords || []).length}/48 Tags)`;
       }
 
@@ -6598,7 +6631,7 @@ CRITICAL RULES:
 
     function clearEntireBatch() {
       if (batchItemList.length === 0) return;
-      batchItemList = [];
+      batchItemList = window.batchItemList = [];
       currentActiveIdx = -1;
       document.getElementById('resultsWorkspace').classList.add('hidden');
       showToast('Batch queue cleared');
@@ -6928,7 +6961,7 @@ CRITICAL RULES:
       }
 
       const requiredPoints = Math.max(1, Number(imageCount) || 1);
-      let currentBalance = Number(credits);
+      let currentBalance = Number(window.credits !== undefined ? window.credits : credits);
       if (isNaN(currentBalance)) currentBalance = 5000;
 
       if (currentBalance < requiredPoints) {
@@ -6940,7 +6973,7 @@ CRITICAL RULES:
 
       // Deduct 1 point per picture
       currentBalance -= requiredPoints;
-      credits = currentBalance;
+      credits = window.credits = currentBalance;
       localStorage.setItem('pixcraft_credits', credits);
 
       // Persist in Users DB for active session
@@ -7646,10 +7679,12 @@ CRITICAL RULES:
       }
       const titleBadge = document.getElementById('titleSeoScorePercent');
       if (titleBadge) {
+        titleBadge.textContent = `${p}% Optimized`;
         titleBadge.innerText = `${p}% Optimized`;
       }
       const kwBadge = document.getElementById('keywordSeoScorePercent');
       if (kwBadge) {
+        kwBadge.textContent = `${p}% Ultra Stock SEO`;
         kwBadge.innerText = `${p}% Ultra Stock SEO`;
       }
     }
