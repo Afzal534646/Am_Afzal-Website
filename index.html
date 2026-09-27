@@ -38,6 +38,15 @@
   </script>
 
   <style>
+
+    /* Critical Display Fallbacks (prevents hidden modals/elements from showing before/without external CDN) */
+    .hidden, [hidden] {
+      display: none !important;
+    }
+    .modal-backdrop-active {
+      display: flex !important;
+    }
+
     html, body {
       font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background-color: #ffffff;
@@ -3229,16 +3238,30 @@
       document.getElementById('upgradeModal').classList.add('hidden');
     }
 
+    
+    // Global Keyboard Handler: Esc key instantly closes any open tool modal
+    window.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' || e.keyCode === 27) {
+        closeAllModals();
+        if (typeof closeAdminPanel === 'function') closeAdminPanel();
+        if (typeof closeApiModal === 'function') closeApiModal();
+      }
+    });
+
     function closeAllModals() {
       const modalIds = [
         'genericToolModal', 'bulkToolsModal', 'imageZoomModal', 'apiKeyDialog', 
         'upgradeModal', 'image2PromptModal', 'imageGenModal', 'aiPromptGenModal', 
         'aiBatchEditorModal', 'eventCalendarModal', 'rejectionPredictorModal', 
-        'imageUpscaleModal', 'bgRemoverModal', 'micstockAnalysisModal', 'exportAgencyModal', 'floatingChatModal', 'voiceModal'
+        'imageUpscaleModal', 'bgRemoverModal', 'micstockAnalysisModal', 'exportAgencyModal', 
+        'floatingChatModal', 'voiceModal'
       ];
       modalIds.forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.classList.add('hidden');
+        if (el) {
+          el.classList.add('hidden');
+          el.style.display = 'none';
+        }
       });
     }
 
@@ -3268,30 +3291,30 @@
       closeAllModals();
 
       if (toolName === 'Image2Prompt Generate') {
-        document.getElementById('image2PromptModal').classList.remove('hidden');
+        const m1 = document.getElementById('image2PromptModal'); if (m1) { m1.classList.remove('hidden'); m1.style.display = 'flex'; }
       } else if (toolName === 'Image Generation') {
         document.getElementById('imgGenCreditBalance').innerText = credits;
-        document.getElementById('imageGenModal').classList.remove('hidden');
+        const m2 = document.getElementById('imageGenModal'); if (m2) { m2.classList.remove('hidden'); m2.style.display = 'flex'; }
       } else if (toolName === 'AI Prompt Generate') {
-        document.getElementById('aiPromptGenModal').classList.remove('hidden');
+        const m3 = document.getElementById('aiPromptGenModal'); if (m3) { m3.classList.remove('hidden'); m3.style.display = 'flex'; }
         if (!document.getElementById('promptArchitectOutputs').innerHTML.trim()) {
           executePromptArchitect();
         }
       } else if (toolName === 'AI Batch Editor') {
         document.getElementById('batchEditorQueueCount').innerText = `${batchItemList.length} Assets in Queue`;
-        document.getElementById('aiBatchEditorModal').classList.remove('hidden');
+        const m4 = document.getElementById('aiBatchEditorModal'); if (m4) { m4.classList.remove('hidden'); m4.style.display = 'flex'; }
       } else if (toolName === 'AI Event Calendar') {
-        document.getElementById('eventCalendarModal').classList.remove('hidden');
+        const m5 = document.getElementById('eventCalendarModal'); if (m5) { m5.classList.remove('hidden'); m5.style.display = 'flex'; }
         renderCalendarEvents('all');
       } else if (toolName === 'AI Rejection Predictor') {
         updateRejectionPredictorUI();
-        document.getElementById('rejectionPredictorModal').classList.remove('hidden');
+        const m6 = document.getElementById('rejectionPredictorModal'); if (m6) { m6.classList.remove('hidden'); m6.style.display = 'flex'; }
       } else if (toolName === 'Bulk Image Upscale') {
-        document.getElementById('imageUpscaleModal').classList.remove('hidden');
+        const m7 = document.getElementById('imageUpscaleModal'); if (m7) { m7.classList.remove('hidden'); m7.style.display = 'flex'; }
       } else if (toolName === 'Bulk BG Remover') {
-        document.getElementById('bgRemoverModal').classList.remove('hidden');
+        const m8 = document.getElementById('bgRemoverModal'); if (m8) { m8.classList.remove('hidden'); m8.style.display = 'flex'; }
       } else if (toolName === 'Micstock Analysis') {
-        document.getElementById('micstockAnalysisModal').classList.remove('hidden');
+        const m9 = document.getElementById('micstockAnalysisModal'); if (m9) { m9.classList.remove('hidden'); m9.style.display = 'flex'; }
       } else {
         document.getElementById('genericToolTitle').innerText = toolName;
         document.getElementById('genericToolModal').classList.remove('hidden');
