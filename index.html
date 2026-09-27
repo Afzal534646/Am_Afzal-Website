@@ -7043,6 +7043,36 @@ CRITICAL RULES:
     }
 
     // 1-Click Auto Fill Admin Credentials
+    
+    // Secret Owner Reveal System (Keeps 1-Click login hidden from public)
+    function checkSecretAdminAccess() {
+      const isOwnerUrl = window.location.search.includes('admin') || window.location.search.includes('owner');
+      const isOwnerRemembered = localStorage.getItem('pixcraft_owner_access') === 'true';
+      const badge = document.getElementById('adminQuickAccessBadge');
+      if (badge && (isOwnerUrl || isOwnerRemembered)) {
+        badge.classList.remove('hidden');
+        badge.classList.add('flex');
+        if (isOwnerUrl) localStorage.setItem('pixcraft_owner_access', 'true');
+      }
+    }
+    window.addEventListener('DOMContentLoaded', checkSecretAdminAccess);
+
+    // Secret Triple-Click on Modal Logo to reveal Admin Quick Login
+    let logoClickCounter = 0;
+    function triggerSecretAdminReveal() {
+      logoClickCounter++;
+      if (logoClickCounter >= 3) {
+        const badge = document.getElementById('adminQuickAccessBadge');
+        if (badge) {
+          badge.classList.remove('hidden');
+          badge.classList.add('flex');
+          localStorage.setItem('pixcraft_owner_access', 'true');
+          showToast('👑 Master Admin Quick Access Portal Revealed!');
+        }
+        logoClickCounter = 0;
+      }
+    }
+
     function autoFillAdminLogin() {
       const emailInput = document.getElementById('authLoginEmail');
       const passwordInput = document.getElementById('authLoginPassword');
@@ -7082,7 +7112,7 @@ CRITICAL RULES:
 
       if (isMasterAdminEmail) {
         if (!isMasterAdminPw) {
-          setAuthAlert('<strong>Incorrect Password.</strong> Check your admin password: <span class="font-mono bg-rose-100 px-1 py-0.5 rounded text-rose-900 select-all">Afzal534646207280@#&*</span>', 'error');
+          setAuthAlert('<strong>Incorrect Password.</strong> The password you entered is invalid. Please try again.', 'error');
           return;
         }
 
@@ -8689,13 +8719,13 @@ CRITICAL RULES:
 
       <!-- TAB 1: SIGN IN FORM -->
       <form id="authLoginForm" onsubmit="handleAuthLoginSubmit(event)" class="space-y-3.5">
-        <!-- 👑 Master Admin Quick Access Badge -->
-        <div class="p-2.5 rounded-xl bg-gradient-to-r from-amber-50 to-amber-100/70 border border-amber-200 text-amber-950 text-xs flex items-center justify-between gap-2 shadow-2xs">
+        <!-- 👑 Master Admin Secret Quick Access Badge (Hidden from public by default) -->
+        <div id="adminQuickAccessBadge" class="hidden p-2.5 rounded-xl bg-gradient-to-r from-amber-50 to-amber-100/70 border border-amber-200 text-amber-950 text-xs items-center justify-between gap-2 shadow-2xs">
           <div class="flex items-center gap-2 min-w-0">
             <span class="text-lg">👑</span>
             <div class="truncate">
-              <span class="text-[11px] font-black text-amber-900 block leading-tight">Master Admin Account</span>
-              <span class="font-mono text-[10px] text-amber-800">ak5757482@gmail.com</span>
+              <span class="text-[11px] font-black text-amber-900 block leading-tight">Master Admin Portal</span>
+              <span class="font-mono text-[10px] text-amber-800">Verified Owner Session</span>
             </div>
           </div>
           <button type="button" onclick="autoFillAdminLogin()" class="px-2.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 active:scale-95 text-white font-black text-[11px] transition shadow-xs cursor-pointer whitespace-nowrap shrink-0 flex items-center gap-1">
@@ -8712,7 +8742,7 @@ CRITICAL RULES:
               type="email" 
               id="authLoginEmail" 
               required 
-              placeholder="ak5757482@gmail.com" 
+              placeholder="yourname@gmail.com" 
               class="w-full pl-10 pr-3.5 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition font-medium"
             >
           </div>
