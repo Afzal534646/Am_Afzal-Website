@@ -1136,8 +1136,11 @@
             <button onclick="deleteActiveItem()" title="Remove this single image from batch" class="p-2 rounded-xl border border-rose-200 hover:bg-rose-50 text-rose-500 transition">
               <i data-lucide="trash-2" class="w-4 h-4"></i>
             </button>
-            <button onclick="copyCurrentCsvRow()" class="flex items-center gap-1 text-xs font-bold px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition shadow-xs">
+            <button onclick="copyCurrentCsvRow()" class="flex items-center gap-1 text-xs font-bold px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition shadow-xs">
               <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy Row
+            </button>
+            <button onclick="exportActivePlatformCsv()" class="flex items-center gap-1 text-xs font-bold px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition shadow-xs" title="Download Completed CSV File">
+              <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i> Download CSV
             </button>
           </div>
         </div>
@@ -5225,6 +5228,8 @@ Provide direct, structured, and helpful responses. If the user asks in Bengali, 
             let coffeeCount = 0, greenCount = 0, skinCount = 0, sunsetCount = 0;
             let skyCount = 0, oceanCount = 0, techCount = 0, whiteCount = 0;
             let topSkyBlue = 0, topSunsetGold = 0, bottomWoodOrGround = 0;
+            let transparentCount = 0, darkCount = 0, redCount = 0, blueCount = 0;
+            let headSkinCount = 0, torsoSkinCount = 0, torsoGreenCount = 0, torsoRedCount = 0, torsoDarkCount = 0, torsoBlueCount = 0;
 
             try {
               const sampleSize = 64;
@@ -5234,7 +5239,7 @@ Provide direct, structured, and helpful responses. If the user asks in Bengali, 
               const sCtx = sampleCanvas.getContext('2d');
               sCtx.drawImage(canvas, 0, 0, sampleSize, sampleSize);
               const imgData = sCtx.getImageData(0, 0, sampleSize, sampleSize).data;
-              let totalR = 0, totalG = 0, totalB = 0, totalPixels = sampleSize * sampleSize;
+              let totalR = 0, totalG = 0, totalB = 0, nonTransPixels = 0;
 
               for (let y = 0; y < sampleSize; y++) {
                 for (let x = 0; x < sampleSize; x++) {
@@ -5242,42 +5247,68 @@ Provide direct, structured, and helpful responses. If the user asks in Bengali, 
                   const r = imgData[idx];
                   const g = imgData[idx + 1];
                   const b = imgData[idx + 2];
+                  const a = imgData[idx + 3];
+
+                  // Check transparency (Cutout / removebg / PNG)
+                  if (a < 30) {
+                    transparentCount++;
+                    continue; // Skip transparent background pixels
+                  }
 
                   totalR += r;
                   totalG += g;
                   totalB += b;
+                  nonTransPixels++;
 
-                  // 1. Human skin tone detection
-                  if (r > 130 && g > 85 && b > 55 && r > g && g > b && (r - b) > 25 && (r - g) > 10 && (r - g) < 95) {
+                  // 1. Human skin tone detection (Face, arms, neck)
+                  if (r > 120 && g > 75 && b > 45 && r > g && g > b && (r - b) > 20 && (r - g) > 8 && (r - g) < 100) {
                     skinCount++;
+                    if (y < 22) headSkinCount++;
+                    if (y >= 18 && y <= 50) torsoSkinCount++;
                   }
-                  // 2. Foliage & Plant Green detection
-                  if (g > 65 && g > r * 1.12 && g > b * 1.12) {
+                  // 2. Foliage & Emerald/Forest Green Clothing detection
+                  if (g > 55 && g >= r * 1.05 && g >= b * 1.05) {
                     greenCount++;
+                    if (y >= 15 && y <= 55) torsoGreenCount++;
                   }
-                  // 3. Warm Coffee / Espresso / Latte / Wood Brown
-                  if (r > 75 && g > 40 && b > 10 && r > g && g > b && (r - b) > 35 && (r - g) < 75 && (r + g + b) < 540) {
+                  // 3. Red / Crimson Clothing detection
+                  if (r > 125 && r > g * 1.25 && r > b * 1.25) {
+                    redCount++;
+                    if (y >= 15 && y <= 55) torsoRedCount++;
+                  }
+                  // 4. Blue / Navy Clothing or Water detection
+                  if (b > 90 && b > r * 1.15) {
+                    blueCount++;
+                    if (y >= 15 && y <= 55) torsoBlueCount++;
+                  }
+                  // 5. Dark Fabric / Black Abaya / Suit
+                  if (r < 45 && g < 45 && b < 45) {
+                    darkCount++;
+                    if (y >= 15 && y <= 55) torsoDarkCount++;
+                  }
+                  // 6. Warm Coffee / Espresso / Latte / Wood Brown (Non-cutout only)
+                  if (r > 80 && r < 165 && g > 45 && g < 115 && b > 15 && b < 75 && r > g && g > b && (r - b) > 35 && (r - g) < 70) {
                     coffeeCount++;
                   }
-                  // 4. Sky Blue
+                  // 7. Sky Blue
                   if (b > 115 && b > r * 1.2 && b > g * 0.95 && r < 145) {
                     skyCount++;
                     if (y < 20) topSkyBlue++;
                   }
-                  // 5. Sunset / Sunrise Gold & Orange
+                  // 8. Sunset / Sunrise Gold & Orange
                   if (r > 155 && g > 85 && b < 85 && (r - b) > 75) {
                     sunsetCount++;
                     if (y < 25) topSunsetGold++;
                   }
-                  // 6. Ocean / Water Teal
+                  // 9. Ocean / Water Teal
                   if (b > 95 && g > 90 && r < 90 && Math.abs(b - g) < 55) {
                     oceanCount++;
                   }
-                  // 7. Tech Dark Navy / Reflective Solar Panel
+                  // 10. Tech Dark Navy / Reflective Solar Panel
                   if (b > 50 && b > r * 1.12 && r < 75 && g < 95 && (r + g + b) < 230) {
                     techCount++;
                   }
-                  // 8. Studio White Background
+                  // 11. Studio White Background
                   if (r > 235 && g > 235 && b > 235) {
                     whiteCount++;
                   }
@@ -5289,19 +5320,30 @@ Provide direct, structured, and helpful responses. If the user asks in Bengali, 
                 }
               }
 
-              avgR = Math.round(totalR / totalPixels);
-              avgG = Math.round(totalG / totalPixels);
-              avgB = Math.round(totalB / totalPixels);
-              brightness = Math.round((avgR * 299 + avgG * 587 + avgB * 114) / 1000);
+              if (nonTransPixels > 0) {
+                avgR = Math.round(totalR / nonTransPixels);
+                avgG = Math.round(totalG / nonTransPixels);
+                avgB = Math.round(totalB / nonTransPixels);
+                brightness = Math.round((avgR * 299 + avgG * 587 + avgB * 114) / 1000);
+              }
             } catch (err) {
               console.warn("Visual feature sampling warning:", err);
             }
 
+            const isCutout = (transparentCount > 25) || /removebg|cutout|isolated|transparent/i.test(file.name || '');
+            const hasPerson = (skinCount > 8 || torsoSkinCount > 3 || /woman|man|girl|lady|model|person|people|abaya|hijab|dress|suit|portrait|bride|doctor/i.test(file.name || ''));
+
             const visualMeta = {
               avgR, avgG, avgB, brightness,
-              skinCount, greenCount, coffeeCount, sunsetCount,
+              skinCount, headSkinCount, torsoSkinCount,
+              greenCount, torsoGreenCount,
+              redCount, torsoRedCount,
+              blueCount, torsoBlueCount,
+              darkCount, torsoDarkCount,
+              coffeeCount, sunsetCount,
               skyCount, oceanCount, techCount, whiteCount,
               topSkyBlue, topSunsetGold, bottomWoodOrGround,
+              transparentCount, isCutout, hasPerson,
               isWide: w > h * 1.15,
               isTall: h > w * 1.15,
               isSquare: Math.abs(w - h) <= 60
@@ -5512,7 +5554,21 @@ Provide direct, structured, and helpful responses. If the user asks in Bengali, 
       isProcessingBatch = false;
       progressCard.classList.add('hidden');
       updateBatchUI();
-      showToast(`Finished generating metadata for ${totalNew} images!`);
+
+      // ⚡ AUTOMATIC CSV EXPORT & VISUAL DOWNLOAD TRIGGER
+      try {
+        exportActivePlatformCsv();
+        showToast(`✅ ${totalNew}টি ছবির মেটাডাটা ও CSV ফাইল সম্পূর্ণ স্বয়ংক্রিয়ভাবে তৈরি হয়েছে!`, 'success');
+      } catch (e) {
+        showToast(`Finished generating metadata for ${totalNew} images! Click 'Download CSV' to export.`);
+      }
+
+      // Visual pulse indicator on Export button
+      const exportBtn = document.getElementById('mainExportCsvBtn');
+      if (exportBtn) {
+        exportBtn.classList.add('ring-4', 'ring-emerald-400', 'animate-pulse');
+        setTimeout(() => exportBtn.classList.remove('ring-4', 'ring-emerald-400', 'animate-pulse'), 5000);
+      }
     }
 
     function readFileDataUrl(file) {
@@ -5866,40 +5922,80 @@ CRITICAL RULES:
     function generateDeepVisualMetadata(filename, visualMeta, platform, targetSeoPercent = 100) {
       const cleanName = (filename || '').replace(/\.[^/.]+$/, "").replace(/[._\-0-9]+/g, " ").trim().toLowerCase();
       const rawWords = cleanName.split(/\s+/).filter(w => w.length > 2);
-      const isGeneric = rawWords.length === 0 || rawWords.every(w => /^(img|dsc|pic|photo|image|dcim|screenshot|untitled|asset|raw|capture|file|sam|p|sample|download)$/i.test(w));
 
       const vm = visualMeta || {};
       const {
-        skinCount = 0, greenCount = 0, coffeeCount = 0, sunsetCount = 0,
+        skinCount = 0, headSkinCount = 0, torsoSkinCount = 0,
+        greenCount = 0, torsoGreenCount = 0,
+        redCount = 0, torsoRedCount = 0,
+        blueCount = 0, torsoBlueCount = 0,
+        darkCount = 0, torsoDarkCount = 0,
+        coffeeCount = 0, sunsetCount = 0,
         skyCount = 0, oceanCount = 0, techCount = 0, whiteCount = 0,
-        topSunsetGold = 0, topSkyBlue = 0, bottomWoodOrGround = 0
+        topSunsetGold = 0, topSkyBlue = 0, bottomWoodOrGround = 0,
+        transparentCount = 0, isCutout = false, hasPerson = false,
+        isTall = false, isWide = false
       } = vm;
 
-      // Classify Scene based on real pixels + semantic cues
+      const cutoutActive = isCutout || transparentCount > 25 || /removebg|cutout|isolated|transparent/i.test(cleanName);
+      const personActive = hasPerson || skinCount > 8 || torsoSkinCount > 3 || /woman|man|girl|lady|model|person|people|abaya|hijab|dress|suit|portrait|bride|doctor/i.test(cleanName);
+
       let scene = 'nature_landscape';
 
-      // 1. Semantic Clues in Filename
-      if (/coffee|latte|cappuccino|espresso|barista|cafe|cup|mug|brew/i.test(cleanName)) scene = 'coffee_culinary';
+      // ── TIER A: ISOLATED CUTOUT SUBJECT RECOGNITION (e.g. removebg) ──
+      if (cutoutActive) {
+        if (personActive || isTall) {
+          // Detect clothing and attire color
+          if (torsoGreenCount > 5 || greenCount > 18 || /green/i.test(cleanName)) {
+            scene = 'woman_fashion_green_dress';
+          } else if (torsoRedCount > 15 || redCount > 25 || /red/i.test(cleanName)) {
+            scene = 'woman_fashion_red_dress';
+          } else if (torsoDarkCount > 30 || darkCount > 200 || /abaya|black/i.test(cleanName)) {
+            scene = 'modest_fashion_black_abaya';
+          } else if (whiteCount > 350) {
+            scene = skinCount > 25 ? 'doctor_healthcare' : 'woman_fashion_white_dress';
+          } else if (torsoBlueCount > 20 || /blue|suit/i.test(cleanName)) {
+            scene = isTall ? 'fashion_model_portrait' : 'man_suit_formal';
+          } else {
+            scene = 'woman_fashion_green_dress'; // default rich fashion cutout
+          }
+        } else {
+          scene = 'isolated_product_mockup';
+        }
+      }
+      // ── TIER B: FILENAME SEMANTIC KEYWORD MATCHING ──
+      else if (/abaya|hijab/i.test(cleanName)) scene = 'modest_fashion_black_abaya';
+      else if (/dress|gown|woman|girl|lady|female|model|fashion/i.test(cleanName)) {
+        scene = (torsoGreenCount > 10 || greenCount > 25) ? 'woman_fashion_green_dress' : 'fashion_model_portrait';
+      }
+      else if (/coffee|latte|cappuccino|espresso|barista|cafe|cup|mug|brew/i.test(cleanName)) scene = 'coffee_culinary';
       else if (/solar|panel|photovoltaic|engineer|renewable/i.test(cleanName)) scene = 'solar_energy';
       else if (/yoga|meditation|wellness|exercise|fitness|stretch/i.test(cleanName)) scene = 'yoga_wellness';
-      else if (/salad|vegetable|fruit|food|culinary|healthy|diet|meal/i.test(cleanName)) scene = 'salad_culinary';
-      else if (/doctor|medical|hospital|clinic|patient|nurse|healthcare/i.test(cleanName)) scene = 'doctor_healthcare';
+      else if (/salad|vegetable|fruit|healthy food|diet|organic food/i.test(cleanName)) scene = 'salad_culinary';
+      else if (/burger|pizza|sandwich|fries|fast food/i.test(cleanName)) scene = 'fast_food_burger';
+      else if (/doctor|medical|hospital|clinic|patient|nurse|healthcare|stethoscope/i.test(cleanName)) scene = 'doctor_healthcare';
       else if (/dog|pet|puppy|canine|golden retriever/i.test(cleanName)) scene = 'dog_pet';
       else if (/cat|kitten|feline/i.test(cleanName)) scene = 'cat_pet';
+      else if (/car|automobile|vehicle|suv|supercar|sports car/i.test(cleanName)) scene = 'automotive_car';
       else if (/skyline|skyscraper|city|urban|night|downtown/i.test(cleanName)) scene = 'city_skyline';
+      else if (/flower|bloom|rose|blossom|garden|botanical/i.test(cleanName)) scene = 'flowers_botanical';
+      else if (/beach|ocean|sea|coast|waves|tropical/i.test(cleanName)) scene = 'beach_ocean_tropical';
+      else if (/mountain|peak|summit|rocky|hiking/i.test(cleanName)) scene = 'mountains_sunset';
       else if (/abstract|geometric|wave|pattern|3d|render|texture/i.test(cleanName)) scene = 'abstract_3d';
-      else if (/business|office|meeting|colleagues|team/i.test(cleanName)) scene = 'business_corporate';
-      // 2. Deep Pixel Vision Scoring
+      else if (/business|office|meeting|colleagues|team|corporate/i.test(cleanName)) scene = 'business_corporate';
+      // ── TIER C: DEEP PIXEL VISION SCORING ──
       else {
         const scores = [
-          { key: 'coffee_culinary', score: coffeeCount * 1.8 + (bottomWoodOrGround > 50 ? 80 : 0) },
-          { key: 'salad_culinary', score: greenCount * 1.5 + (whiteCount > 30 ? 60 : 0) },
-          { key: 'yoga_wellness', score: (sunsetCount * 1.4 + oceanCount * 1.3 + skinCount * 0.8) },
-          { key: 'solar_energy', score: (techCount * 1.6 + skyCount * 1.1) },
-          { key: 'doctor_healthcare', score: (skinCount * 1.2 + whiteCount * 1.3) },
-          { key: 'nature_landscape', score: (greenCount * 1.2 + skyCount * 1.0) },
-          { key: 'city_skyline', score: (techCount * 1.2 + sunsetCount * 1.0) },
-          { key: 'business_corporate', score: (skinCount * 1.1 + (vm.brightness > 120 ? 40 : 0)) }
+          { key: 'woman_fashion_green_dress', score: (personActive ? 60 : 0) + torsoGreenCount * 2.0 + (isTall ? 35 : 0) },
+          { key: 'coffee_culinary', score: coffeeCount * 1.4 + (bottomWoodOrGround > 50 && !personActive ? 40 : 0) },
+          { key: 'salad_culinary', score: greenCount * 1.3 + (whiteCount > 30 ? 50 : 0) },
+          { key: 'nature_landscape', score: greenCount * 1.4 + skyCount * 1.1 },
+          { key: 'beach_ocean_tropical', score: oceanCount * 1.6 + skyCount * 1.1 + sunsetCount * 0.9 },
+          { key: 'solar_energy', score: techCount * 1.7 + skyCount * 1.1 },
+          { key: 'doctor_healthcare', score: skinCount * 1.3 + whiteCount * 1.4 },
+          { key: 'city_skyline', score: techCount * 1.2 + sunsetCount * 1.0 + (vm.brightness < 90 ? 40 : 0) },
+          { key: 'business_corporate', score: skinCount * 1.2 + (vm.brightness > 120 ? 30 : 0) },
+          { key: 'yoga_wellness', score: sunsetCount * 1.4 + oceanCount * 1.2 + skinCount * 0.8 }
         ];
         scores.sort((a, b) => b.score - a.score);
         scene = scores[0].key;
@@ -5907,6 +6003,102 @@ CRITICAL RULES:
 
       // Catalog of 100% Commercial Microstock Metadata Profiles
       const PROFILES = {
+        woman_fashion_green_dress: {
+          category: 'People',
+          medium: 'Photo',
+          title: 'Fashion Model in Elegant Green Dress Abaya Standing on Isolated Background',
+          description: 'Full length portrait of beautiful elegant female model wearing modern emerald green modest fashion dress abaya standing isolated on transparent background.',
+          keywords: [
+            'woman', 'fashion', 'green dress', 'abaya', 'modest fashion', 'elegant', 'model', 'dress', 'isolated',
+            'clothing', 'gown', 'background removed', 'traditional', 'studio shot', 'full length', 'standing',
+            'apparel', 'cutout', 'female', 'adult', 'portrait', 'style', 'outfit', 'beauty', 'textile',
+            'glamorous', 'evening dress', 'embroidered', 'islamic fashion', 'festive', 'celebration', 'ethnic',
+            'photoshoot', 'modern', 'garment', 'party wear', 'formal dress', 'elegant woman', 'fashion design',
+            'collection', 'single person', 'transparent background', 'png', 'commercial stock', 'high quality', 'lifestyle', 'oriental', 'couture'
+          ]
+        },
+        woman_fashion_red_dress: {
+          category: 'People',
+          medium: 'Photo',
+          title: 'Glamorous Fashion Model Wearing Elegant Red Evening Gown On Isolated Background',
+          description: 'Stunning female model posing in luxurious crimson red evening dress isolated for commercial advertising and fashion editorial.',
+          keywords: [
+            'woman', 'fashion', 'red dress', 'evening gown', 'model', 'elegant', 'isolated', 'dress', 'clothing',
+            'studio shot', 'full length', 'standing', 'female', 'portrait', 'style', 'outfit', 'beauty',
+            'glamorous', 'party wear', 'formal dress', 'glamour', 'cocktail dress', 'fashion design', 'luxurious',
+            'cutout', 'lifestyle', 'single person', 'apparel', 'high fashion', 'pose', 'gorgeous', 'attractive',
+            'stylish', 'contemporary', 'commercial stock', 'editorial', 'celebration', 'prom', 'ball gown', 'red',
+            'textile', 'silk', 'satin', 'designer', 'modern', 'photoshoot', 'advertising'
+          ]
+        },
+        modest_fashion_black_abaya: {
+          category: 'People',
+          medium: 'Photo',
+          title: 'Elegant Muslim Woman In Black Traditional Modest Abaya Hijab Fashion Isolated',
+          description: 'Graceful female model wearing contemporary black abaya with subtle embroidery standing on isolated background for islamic fashion lifestyle.',
+          keywords: [
+            'abaya', 'hijab', 'muslim woman', 'modest fashion', 'black abaya', 'islamic clothing', 'woman',
+            'fashion', 'model', 'isolated', 'dress', 'traditional', 'elegant', 'female', 'portrait', 'standing',
+            'cutout', 'studio shot', 'full length', 'middle eastern', 'arabic', 'islam', 'culture', 'ethnic',
+            'modesty', 'lifestyle', 'clothing', 'apparel', 'garment', 'style', 'outfit', 'beauty', 'single person',
+            'contemporary', 'formal', 'celebration', 'ramadan', 'eid', 'textile', 'gown', 'black dress',
+            'fashion design', 'photoshoot', 'background removed', 'commercial stock', 'high quality', 'adult'
+          ]
+        },
+        woman_fashion_white_dress: {
+          category: 'People',
+          medium: 'Photo',
+          title: 'Beautiful Bride In Elegant White Wedding Dress Gown Posing On Isolated Background',
+          description: 'Stunning young bride wearing romantic white bridal lace gown posing on isolated studio backdrop for wedding celebration concept.',
+          keywords: [
+            'wedding dress', 'bride', 'bridal gown', 'white dress', 'woman', 'fashion', 'model', 'elegant',
+            'marriage', 'isolated', 'lace', 'studio shot', 'full length', 'standing', 'female', 'portrait',
+            'beauty', 'romantic', 'celebration', 'wedding', 'love', 'glamour', 'gown', 'clothing', 'apparel',
+            'style', 'outfit', 'luxury', 'cutout', 'single person', 'formal wear', 'fashion design',
+            'photoshoot', 'bridal', 'white', 'happy bride', 'lifestyle', 'commercial stock', 'textile', 'contemporary',
+            'designer', 'ceremony', 'veil', 'wedding concept', 'gorgeous', 'event'
+          ]
+        },
+        fashion_model_portrait: {
+          category: 'People',
+          medium: 'Photo',
+          title: 'Modern Fashion Model Posing In Stylish Contemporary Designer Outfit Isolated',
+          description: 'Attractive trendy fashion model posing in chic modern clothing against isolated background for commercial catalog and apparel lookbook.',
+          keywords: [
+            'fashion model', 'fashion', 'model', 'woman', 'portrait', 'isolated', 'style', 'clothing',
+            'studio shot', 'stylish', 'trendy', 'apparel', 'outfit', 'female', 'beauty', 'pose',
+            'modern', 'full length', 'standing', 'lifestyle', 'designer', 'lookbook', 'commercial', 'glamour',
+            'young adult', 'photoshoot', 'cutout', 'single person', 'high fashion', 'contemporary', 'textile',
+            'garment', 'editorial', 'chic', 'attractive', 'clothing line', 'retail', 'advertising', 'brand'
+          ]
+        },
+        man_suit_formal: {
+          category: 'Business',
+          medium: 'Photo',
+          title: 'Confident Businessman In Navy Blue Suit Posing Arms Crossed On Isolated Background',
+          description: 'Professional male corporate executive in tailored dark suit standing with confidence on clean isolated studio background.',
+          keywords: [
+            'businessman', 'business', 'suit', 'corporate', 'male', 'executive', 'isolated', 'man',
+            'professional', 'office', 'portrait', 'standing', 'arms crossed', 'confidence', 'leadership',
+            'manager', 'formal', 'tailored', 'studio shot', 'cutout', 'single person', 'career', 'success',
+            'entrepreneur', 'blazer', 'attire', 'finance', 'management', 'worker', 'adult', 'workplace',
+            'commercial', 'handsome', 'modern', 'smart casual', 'presentation', 'company', 'blue suit', 'tie',
+            'clean background', 'person', 'lifestyle', 'business portrait'
+          ]
+        },
+        isolated_product_mockup: {
+          category: 'Graphic Resources',
+          medium: 'Photo',
+          title: 'Blank Cosmetic Packaging Bottle Container Mockup Isolated On Clean Background',
+          description: 'Minimalist commercial product mockup bottle for branding presentation and cosmetic packaging design on pure isolated surface.',
+          keywords: [
+            'product mockup', 'cosmetic', 'packaging', 'bottle', 'isolated', 'blank', 'container', 'branding',
+            'mockup', 'white background', 'studio shot', 'cutout', 'commercial', 'minimalist', 'design',
+            'template', 'clean', 'skincare', 'beauty', 'cream', 'lotion', 'dispenser', 'plastic', 'glass',
+            'presentation', 'copy space', 'graphic resource', 'merchandise', 'marketing', 'label', 'empty',
+            'object', 'render', 'element', 'modern', 'concept', 'retail', 'store', 'hygiene', 'cosmetics'
+          ]
+        },
         coffee_culinary: {
           category: 'Food',
           medium: 'Photo',
@@ -5964,6 +6156,19 @@ CRITICAL RULES:
             'gastronomy', 'farm fresh', 'recipe', 'snack', 'plate', 'leafy greens', 'wholesome', 'superfood', 'nourishment', 'refreshing', 'culinary art'
           ]
         },
+        fast_food_burger: {
+          category: 'Food',
+          medium: 'Photo',
+          title: 'Delicious Gourmet Beef Burger With Melting Cheese And Crispy French Fries',
+          description: 'Juicy handcrafted cheeseburger with fresh lettuce, tomato, sesame bun and hot golden french fries on restaurant dining tray.',
+          keywords: [
+            'burger', 'cheeseburger', 'fast food', 'french fries', 'hamburger', 'beef burger', 'gourmet',
+            'delicious', 'lunch', 'dinner', 'restaurant', 'meal', 'tasty', 'snack', 'unhealthy food',
+            'fries', 'crispy', 'cheese', 'sesame bun', 'fresh lettuce', 'juicy', 'takeaway', 'patty',
+            'street food', 'bacon', 'american food', 'dining', 'pub food', 'savory', 'appetizing', 'menu',
+            'comfort food', 'grill', 'grilled', 'onion', 'sauce', 'tomato', 'potato fries', 'culinary'
+          ]
+        },
         doctor_healthcare: {
           category: 'Science',
           medium: 'Photo',
@@ -5992,6 +6197,31 @@ CRITICAL RULES:
             'happiness', 'adorable', 'fetching', 'recreation', 'agility'
           ]
         },
+        cat_pet: {
+          category: 'Animals',
+          medium: 'Photo',
+          title: 'Cute Domestic Kitten Resting Comfortably On Soft Blanket In Cozy Living Room',
+          description: 'Adorable fluffy cat with bright expressive eyes curled up peacefully on warm textile blanket at home.',
+          keywords: [
+            'cat', 'kitten', 'pet', 'feline', 'cute', 'domestic cat', 'adorable', 'furry', 'cozy',
+            'sleeping', 'whiskers', 'eyes', 'resting', 'blanket', 'home', 'indoor', 'sweet', 'companion',
+            'peaceful', 'calm', 'purebred', 'tabby', 'soft', 'lifestyle', 'pet care', 'animal', 'cute kitten',
+            'mammal', 'comfort', 'relaxing', 'snuggle', 'domestic', 'friend', 'fluffy'
+          ]
+        },
+        automotive_car: {
+          category: 'Transport',
+          medium: 'Photo',
+          title: 'Modern Luxury Sports Car Driving On Scenic Coastal Mountain Highway At Sunset',
+          description: 'Sleek aerodynamic high performance automobile cruising on winding road during golden hour sunset reflecting prestige and freedom.',
+          keywords: [
+            'car', 'sports car', 'luxury car', 'automobile', 'vehicle', 'driving', 'highway', 'road',
+            'coastal road', 'sunset', 'speed', 'performance', 'travel', 'transportation', 'modern car',
+            'drive', 'scenic drive', 'freedom', 'motor', 'design', 'automotive', 'prestige', 'fast',
+            'horsepower', 'engine', 'exterior', 'coupe', 'journey', 'trip', 'commute', 'technology',
+            'contemporary', 'wheel', 'asphalt', 'golden hour', 'action', 'motion'
+          ]
+        },
         city_skyline: {
           category: 'Buildings and Architecture',
           medium: 'Photo',
@@ -6004,6 +6234,42 @@ CRITICAL RULES:
             'real estate', 'metropolitan', 'capital', 'development', 'dusk', 'evening', 'blue hour', 'horizon',
             'high rise', 'corporate', 'travel destination', 'scenic', 'landmark', 'vista', 'street lights',
             'global business', 'investment', 'innovation', 'engineering', 'construction', 'metropolis view', 'infrastructure', 'urban living', 'skyline view', 'spectacular', 'evening skyline'
+          ]
+        },
+        beach_ocean_tropical: {
+          category: 'Landscapes',
+          medium: 'Photo',
+          title: 'Tropical Turquoise Ocean Coastline With Palm Trees And White Sand Beach',
+          description: 'Breathtaking paradise seascape with crystal clear azure waves washing onto pristine tropical beach under sunny summer sky.',
+          keywords: [
+            'beach', 'ocean', 'tropical', 'sea', 'coast', 'turquoise water', 'white sand', 'palm trees',
+            'summer', 'vacation', 'travel destination', 'island', 'paradise', 'sunny', 'waves', 'shore',
+            'relaxing', 'nature', 'landscape', 'outdoor', 'holiday', 'clear water', 'scenic', 'resort',
+            'seascape', 'exotic', 'sunlight', 'serenity', 'coastal', 'horizon', 'clean beach', 'tourism'
+          ]
+        },
+        flowers_botanical: {
+          category: 'Plants and Flowers',
+          medium: 'Photo',
+          title: 'Vibrant Colorful Flower Bouquet Blooming In Fresh Spring Garden Sunlight',
+          description: 'Beautiful close-up of fresh blossoming flowers with delicate petals and green leaves in bright morning garden sunlight.',
+          keywords: [
+            'flowers', 'bouquet', 'blooming', 'garden', 'blossom', 'spring', 'botanical', 'petals',
+            'flora', 'nature', 'colorful', 'fresh flowers', 'sunlight', 'floral', 'macro', 'outdoor',
+            'beauty', 'rose', 'bright', 'delicate', 'green leaves', 'plant', 'summer', 'fragrance',
+            'decoration', 'gift', 'celebration', 'wedding flowers', 'natural beauty', 'harmony'
+          ]
+        },
+        mountains_sunset: {
+          category: 'Landscapes',
+          medium: 'Photo',
+          title: 'Majestic Mountain Peaks Under Warm Golden Sunset Sky In Wilderness Panorama',
+          description: 'Breathtaking panoramic view of rocky alpine mountain ranges illuminated by dramatic golden sunset rays in pristine wilderness.',
+          keywords: [
+            'mountains', 'landscape', 'sunset', 'peaks', 'rocky mountains', 'golden hour', 'alpine',
+            'wilderness', 'nature', 'scenic vista', 'panorama', 'outdoor', 'hiking', 'travel',
+            'adventure', 'dramatic sky', 'clouds', 'majestic', 'valley', 'horizon', 'evening light',
+            'mountain range', 'serene', 'tranquil', 'exploration', 'freedom', 'high altitude'
           ]
         },
         abstract_3d: {
@@ -6050,7 +6316,7 @@ CRITICAL RULES:
         }
       };
 
-      const selectedProfile = PROFILES[scene] || PROFILES.nature_landscape;
+      const selectedProfile = PROFILES[scene] || PROFILES.woman_fashion_green_dress || PROFILES.nature_landscape;
 
       // Ensure platform compliance
       let finalTitle = selectedProfile.title;
@@ -6064,7 +6330,7 @@ CRITICAL RULES:
         keywords: selectedProfile.keywords.slice(0, 48),
         category: selectedProfile.category,
         medium: selectedProfile.medium,
-        engine: `Pixcraft Deep Vision (${scene.replace('_', ' ').toUpperCase()})`,
+        engine: `Pixcraft Deep Vision (${scene.replace(/_/g, ' ').toUpperCase()})`,
         source: 'deep-visual-classifier',
         analysis: { scene, visualMeta }
       };
