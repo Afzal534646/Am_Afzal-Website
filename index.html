@@ -124,8 +124,11 @@
     }
   </style>
 
+
+
+
 <style id="pixcraft-security-shield">
-  /* PIXCRAFT PROPRIETARY SECURITY SHIELD - ANTI-SCRAPE & ANTI-COPY */
+  /* PIXCRAFT ACTIVE ANTI-COPY & ANTI-THEFT SHIELD */
   body {
     -webkit-user-select: none !important;
     -moz-user-select: none !important;
@@ -133,7 +136,7 @@
     user-select: none !important;
     -webkit-touch-callout: none !important;
   }
-  input, textarea, [contenteditable="true"], .selectable-text, .copyable-content {
+  input, textarea, [contenteditable="true"], .selectable-text, .copyable-content, pre, code {
     -webkit-user-select: text !important;
     -moz-user-select: text !important;
     -ms-user-select: text !important;
@@ -142,7 +145,6 @@
   img, svg, canvas {
     -webkit-user-drag: none !important;
     user-drag: none !important;
-    pointer-events: auto;
   }
   #pixSecurityToast {
     position: fixed;
@@ -150,8 +152,8 @@
     left: 50%;
     transform: translateX(-50%) translateY(100px);
     background: rgba(15, 23, 42, 0.95);
-    border: 1px solid rgba(239, 68, 68, 0.4);
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 15px rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.5);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 15px rgba(239, 68, 68, 0.25);
     color: #f8fafc;
     padding: 12px 24px;
     border-radius: 12px;
@@ -177,24 +179,22 @@
 /**
  * =========================================================================
  * PIXCRAFT ACTIVE ANTI-TAMPER & COPYRIGHT SECURITY SHIELD
- * Owner: Afzal Hossain (ak5757482@gmail.com | Phone/WhatsApp: 01907-286768)
- * Notice: All rights strictly reserved. Copying, scraping, cloning, or
- * unauthorized distribution will trigger automated legal enforcement.
+ * Owner: Afzal Hossain (ak5757482@gmail.com | WhatsApp: +8801907286768)
+ * Notice: All rights strictly reserved. Copying, scraping, or mirroring
+ * is strictly prohibited under digital copyright protections.
  * =========================================================================
  */
 (function() {
   'use strict';
 
-  // 1. Digital Ownership Watermark
+  // Digital Ownership Watermark
   window.__PIXCRAFT_SECURITY__ = {
     owner: "Afzal Hossain",
     contact: "ak5757482@gmail.com",
     phone: "01907286768",
-    signature: "0x8f2a6d71b4e95c3a",
-    timestamp: "2026-09-27T04:20:00Z"
+    signature: "0x8f2a6d71b4e95c3a"
   };
 
-  // Toast notifier
   function triggerSecurityNotice(msg) {
     let toast = document.getElementById('pixSecurityToast');
     if (!toast) {
@@ -202,28 +202,27 @@
       toast.id = 'pixSecurityToast';
       document.body.appendChild(toast);
     }
-    toast.innerHTML = `<span style="font-size:16px;">🔒</span> <span>${msg || 'Proprietary System: Source inspection and code copying are disabled.'}</span>`;
+    toast.innerHTML = `<span style="font-size:16px;">🔒</span> <span>${msg || 'Proprietary System: Source inspection and copying are disabled.'}</span>`;
     toast.classList.add('active');
     clearTimeout(toast._timer);
-    toast._timer = setTimeout(() => {
+    toast._timer = setTimeout(function() {
       toast.classList.remove('active');
-    }, 3200);
+    }, 3000);
   }
   window.triggerSecurityNotice = triggerSecurityNotice;
 
-  // 2. Disable Right-Click Context Menu
+  // 1. Disable Right-Click Context Menu (except inside text inputs)
   document.addEventListener('contextmenu', function(e) {
-    // Allow right click ONLY inside input and textarea for paste operations
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
       return true;
     }
     e.preventDefault();
     e.stopPropagation();
-    triggerSecurityNotice('সুরক্ষা নোটিশ: সোর্স কোড ও এসেট কপি করা সম্পূর্ণ নিষিদ্ধ।');
+    triggerSecurityNotice('সুরক্ষা নোটিশ: রাইট-ক্লিক ও সোর্স কোড দেখা বন্ধ রাখা হয়েছে।');
     return false;
   }, { capture: true });
 
-  // 3. Block Developer Tools & Saving Shortcuts
+  // 2. Block Inspection & Save Keyboard Shortcuts
   document.addEventListener('keydown', function(e) {
     const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
     const cmdOrCtrl = isMac ? e.metaKey : e.ctrlKey;
@@ -287,7 +286,7 @@
     }
   }, { capture: true });
 
-  // 4. Disable Asset Dragging
+  // 3. Disable Dragging of Images / Logos
   document.addEventListener('dragstart', function(e) {
     if (e.target.tagName === 'IMG' || e.target.tagName === 'SVG' || e.target.tagName === 'A') {
       e.preventDefault();
@@ -295,49 +294,17 @@
     }
   }, { capture: true });
 
-  // 5. DevTools Detector & Debugger Trap
-  let devToolsOpen = false;
-  const threshold = 160;
-
-  function antiDebugLoop() {
-    try {
-      const start = performance.now();
-      (function() {
-        // High-precision debugger probe
-        (function test() {
-          return (function() {}).constructor('debugger')();
-        })();
-      })();
-      const elapsed = performance.now() - start;
-      if (elapsed > 100) {
-        devToolsOpen = true;
-      }
-    } catch (err) {}
-  }
-
-  // Periodic Console Purge & Legal Notice
-  setInterval(function() {
-    const widthDiff = window.outerWidth - window.innerWidth;
-    const heightDiff = window.outerHeight - window.innerHeight;
-    if (widthDiff > threshold || heightDiff > threshold) {
-      devToolsOpen = true;
-    }
-
-    if (devToolsOpen) {
-      try {
-        console.clear();
-      } catch (e) {}
-      console.log(
-        "%c🛑 PIXCRAFT AI - PROPRIETARY INTELLECTUAL PROPERTY",
-        "color:#ef4444;font-size:22px;font-weight:bold;text-shadow:0 0 10px rgba(239,68,68,0.5);"
-      );
-      console.log(
-        "%cProtected Intellectual Property of Afzal Hossain (ak5757482@gmail.com | 01907-286768).\nUnauthorized cloning, scraping, or code theft is strictly monitored and prosecuted under copyright laws.",
-        "color:#38bdf8;font-size:13px;line-height:1.6;"
-      );
-      antiDebugLoop();
-    }
-  }, 1200);
+  // 4. Safe Legal Notice in Console (One-time, non-blocking)
+  try {
+    console.log(
+      "%c🛑 PIXCRAFT AI - PROPRIETARY INTELLECTUAL PROPERTY",
+      "color:#ef4444;font-size:18px;font-weight:bold;"
+    );
+    console.log(
+      "%cProtected Intellectual Property of Afzal Hossain (ak5757482@gmail.com | 01907-286768).\nUnauthorized cloning or scraping is strictly prohibited under digital copyright protections.",
+      "color:#38bdf8;font-size:12px;line-height:1.5;"
+    );
+  } catch (err) {}
 
 })();
 </script>
