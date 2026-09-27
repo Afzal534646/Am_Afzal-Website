@@ -7491,7 +7491,10 @@ CRITICAL RULES:
 
       if (icon) icon.setAttribute('data-lucide', isPw ? 'eye-off' : 'eye');
       if (inlineIcon) inlineIcon.setAttribute('data-lucide', isPw ? 'eye-off' : 'eye');
-      if (text) text.innerText = isPw ? 'Hide' : 'Show';
+      if (text) {
+        text.textContent = isPw ? 'Hide' : 'Show';
+        text.innerText = isPw ? 'Hide' : 'Show';
+      }
 
       if (window.lucide) lucide.createIcons();
     }
@@ -9534,13 +9537,7 @@ CRITICAL RULES:
         </div>
 
         <div>
-          <div class="flex items-center justify-between mb-1.5">
-            <label class="block text-xs font-bold text-slate-700">Password / Access Pass</label>
-            <button type="button" onclick="togglePasswordVisibility('authLoginPassword', 'authPwEyeIcon', 'authPwEyeText')" class="text-[11px] font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1">
-              <i id="authPwEyeIcon" data-lucide="eye" class="w-3.5 h-3.5"></i>
-              <span id="authPwEyeText">Show</span>
-            </button>
-          </div>
+          <label class="block text-xs font-bold text-slate-700 mb-1.5">Password / Access Pass</label>
           <div class="relative">
             <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
               <i data-lucide="key-round" class="w-4 h-4"></i>
@@ -9550,8 +9547,17 @@ CRITICAL RULES:
               id="authLoginPassword" 
               required 
               placeholder="Enter your password" 
-              class="w-full pl-10 pr-3.5 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition font-medium"
+              class="w-full pl-10 pr-18 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition font-medium"
             >
+            <button 
+              type="button" 
+              onclick="togglePasswordVisibility('authLoginPassword', 'authPwEyeIcon', 'authPwEyeText')" 
+              class="absolute inset-y-0 right-0 pr-3.5 flex items-center gap-1 text-slate-400 hover:text-blue-600 transition cursor-pointer select-none" 
+              title="Show / Hide Password"
+            >
+              <i id="authPwEyeIcon" data-lucide="eye" class="w-4 h-4 text-slate-400 hover:text-blue-600"></i>
+              <span id="authPwEyeText" class="text-xs font-semibold text-slate-500 hover:text-blue-600">Show</span>
+            </button>
           </div>
         </div>
 
@@ -9723,9 +9729,10 @@ CRITICAL RULES:
                   <i data-lucide="lock" class="w-4 h-4"></i>
                 </span>
                 <input type="password" id="authReqPassword" required minlength="6" placeholder="At least 6 characters (e.g. 12345678)" 
-                  class="w-full pl-10 pr-10 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-pink-500 outline-none transition font-medium">
-                <button type="button" onclick="togglePasswordVisibility('authReqPassword', 'authReqPwEyeIconInline')" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-pink-600 transition cursor-pointer" title="Show / Hide Password">
+                  class="w-full pl-10 pr-18 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-pink-500 outline-none transition font-medium">
+                <button type="button" onclick="togglePasswordVisibility('authReqPassword', 'authReqPwEyeIconInline', 'authReqPwEyeText')" class="absolute inset-y-0 right-0 pr-3.5 flex items-center gap-1 text-slate-400 hover:text-pink-600 transition cursor-pointer select-none" title="Show / Hide Password">
                   <i id="authReqPwEyeIconInline" data-lucide="eye" class="w-4 h-4"></i>
+                  <span id="authReqPwEyeText" class="text-xs font-semibold text-slate-500 hover:text-pink-600">Show</span>
                 </button>
               </div>
             </div>
@@ -9737,9 +9744,10 @@ CRITICAL RULES:
                   <i data-lucide="shield-check" class="w-4 h-4"></i>
                 </span>
                 <input type="password" id="authReqPasswordConfirm" required minlength="6" placeholder="Repeat your password" 
-                  class="w-full pl-10 pr-10 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-pink-500 outline-none transition font-medium">
-                <button type="button" onclick="togglePasswordVisibility('authReqPasswordConfirm', 'authReqConfPwEyeIconInline')" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-pink-600 transition cursor-pointer" title="Show / Hide Password">
+                  class="w-full pl-10 pr-18 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-pink-500 outline-none transition font-medium">
+                <button type="button" onclick="togglePasswordVisibility('authReqPasswordConfirm', 'authReqConfPwEyeIconInline', 'authReqConfPwEyeText')" class="absolute inset-y-0 right-0 pr-3.5 flex items-center gap-1 text-slate-400 hover:text-pink-600 transition cursor-pointer select-none" title="Show / Hide Password">
                   <i id="authReqConfPwEyeIconInline" data-lucide="eye" class="w-4 h-4"></i>
+                  <span id="authReqConfPwEyeText" class="text-xs font-semibold text-slate-500 hover:text-pink-600">Show</span>
                 </button>
               </div>
             </div>
