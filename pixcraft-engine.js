@@ -1220,7 +1220,7 @@ Write one ${eng.name} prompt (80-120 words) that recreates it as a commercial st
     get hasWebGPU() { return state.webgpu; },
     get visionReady() { return !!state.clip; },
     get visionDevice() { return state.clip ? state.clip.device : null; },
-    warmupVision: () => loadClip(),
+    warmupVision: async () => Promise.resolve(null),
     analyzeImage, composeMetadata, generateStockMetadata, imageToPrompt, promptFromAnalysis,
     llm, extractJson,
     customEngines: {
