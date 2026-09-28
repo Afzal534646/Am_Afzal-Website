@@ -1126,7 +1126,7 @@
               <div class="flex items-center gap-2 flex-wrap mb-1">
                 <span id="activePlatformBadge" class="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700">Adobe Stock</span>
                 <span id="seoQualityBadge" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
-                  <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> SEO Score: 100%
+                  <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> SEO Score: 98%
                 </span>
                 <span class="text-xs text-amber-600 font-bold flex items-center gap-1 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
                   <i data-lucide="award" class="w-3.5 h-3.5"></i> Top 10 Weighting
@@ -5498,48 +5498,42 @@ Provide direct, structured, and helpful responses. If the user asks in Bengali, 
 
             let meta = null;
 
-            // Tier 1: Google Gemini Multimodal Cloud Vision (Fast Cloud Vision with 8s Timeout Guard)
-            if (userApiKey && userApiKey.trim()) {
-              try {
-                meta = await Promise.race([
-                  fetchStockMetadataWithGemini(base64Data, mimeType, item.fileName),
-                  new Promise((_, reject) => setTimeout(() => reject(new Error('Gemini API timeout')), 8000))
-                ]);
-              } catch (geminiErr) {
-                console.warn(`Gemini API error on ${item.fileName}, falling back to Deep Vision:`, geminiErr);
-              }
-            }
-
-            // Tier 2: Instant Deep Visual Multi-Domain Classifier (100% Real Image Content, Typography & Quotes Match, 0ms latency)
-            if (!meta || !meta.title) {
-              try {
-                meta = generateDeepVisualMetadata(item.fileName, visualMeta, activePlatform, window.selectedSeoPercent || 100);
-              } catch (deepErr) {
-                console.warn(`Deep visual classifier error on ${item.fileName}:`, deepErr);
-              }
-            }
-
-            // Tier 3: PixEngine On-Device Vision (Safeguarded with 2s timeout to prevent browser freeze)
-            if (!meta || !meta.title) {
+            // Tier 1: Ground metadata in actual image analysis first. Do not let
+            // filename/color heuristics override the visual model's assessment.
+            if (window.PixEngine && typeof PixEngine.generateStockMetadata === 'function') {
               try {
                 meta = await Promise.race([
                   PixEngine.generateStockMetadata({
-                    dataUrl: displayUrl,
-                    base64: base64Data,
-                    mime: mimeType,
-                    fileName: item.fileName,
-                    platform: activePlatform,
+                    dataUrl: displayUrl, base64: base64Data, mime: mimeType,
+                    fileName: item.fileName, platform: activePlatform,
                     seoTargetPercent: (window.selectedSeoPercent || 100),
                     criteriaNotice: (PLATFORM_CRITERIA[activePlatform] || {}).notice,
-                    geminiKey: userApiKey,
-                    geminiModel: selectedModel,
-                    spamWords: SPAM_WORDS
+                    geminiKey: userApiKey, geminiModel: selectedModel, spamWords: SPAM_WORDS
                   }),
-                  new Promise((_, reject) => setTimeout(() => reject(new Error('PixEngine timeout')), 2000))
+                  new Promise((_, reject) => setTimeout(() => reject(new Error('Image analysis timed out')), 90000))
                 ]);
               } catch (engineErr) {
-                console.warn(`PixEngine vision fallback for ${item.fileName}:`, engineErr);
+                console.warn(`Image-grounded analysis unavailable for ${item.fileName}:`, engineErr);
               }
+            }
+
+            // Tier 2: legacy cloud vision path as a secondary attempt if engine is unavailable.
+            if ((!meta || !meta.title) && userApiKey && userApiKey.trim()) {
+              try {
+                meta = await Promise.race([
+                  fetchStockMetadataWithGemini(base64Data, mimeType, item.fileName),
+                  new Promise((_, reject) => setTimeout(() => reject(new Error('Gemini API timeout')), 45000))
+                ]);
+              } catch (geminiErr) {
+                console.warn(`Gemini retry failed for ${item.fileName}:`, geminiErr);
+              }
+            }
+
+            // Tier 3: heuristic fallback only; mark it unverified so it is not presented as confirmed SEO.
+            if (!meta || !meta.title) {
+              meta = generateDeepVisualMetadata(item.fileName, visualMeta, activePlatform, window.selectedSeoPercent || 100);
+              meta.source = 'heuristic-fallback-unverified';
+              meta.engine = 'Fallback heuristics — visual AI verification unavailable';
             }
 
             if (!meta || !meta.title) {
@@ -5554,7 +5548,7 @@ Provide direct, structured, and helpful responses. If the user asks in Bengali, 
             item.engine = meta.engine || 'Pixcraft AI Vision Engine';
             item.source = meta.source || 'multimodal-vision';
             item.analysis = meta.analysis;
-            item.status = 'done';
+            item.status = (item.source === 'heuristic-fallback-unverified') ? 'needs-review' : 'done';
           } catch (err) {
             console.warn(`Batch worker fallback for ${item.fileName}:`, err);
             const fallback = generateDeepVisualMetadata(item.fileName, item.visualMeta, activePlatform, window.selectedSeoPercent || 100);
